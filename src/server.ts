@@ -10,8 +10,9 @@ const startServer = async () => {
       console.log("Connected To DataBase");
 
       server = app.listen(5000, () => {
-        console.log('Server is Running');
+        console.log('Server is Running!!');
       })
+
     } catch(error){
         console.log(error);
     }
