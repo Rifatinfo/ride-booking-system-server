@@ -20,7 +20,7 @@ const updateRideStatus = catchAsync(async (req: Request, res: Response) => {
     const riderId = req.params.id;
     const { status } = req.body;
     const user = req.user;
-    console.log(user);
+    console.log(user, riderId);
 
     if (!user) {
         throw new AppError(StatusCodes.BAD_REQUEST, "Not Found User")
