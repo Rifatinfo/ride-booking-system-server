@@ -27,6 +27,7 @@ export enum IsActive {
 
 
 export interface IUser {
+    _id? : string;
     name: string;
     email: string;
     password?: string;         // Remind hash 
