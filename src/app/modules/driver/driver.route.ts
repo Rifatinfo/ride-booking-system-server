@@ -8,6 +8,8 @@ import { UserController } from "../user/user.controller";
 const router = Router();
 
 router.get("/earning", checkAuth(Role.DRIVER), DriverController.getDriverEarning);
+router.get("/drivers", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), UserController.getAllDrivers);
+
 router.patch("/set-availability", checkAuth(Role.DRIVER), UserController.setAvailability);
 
 export const DriverRoute = router;

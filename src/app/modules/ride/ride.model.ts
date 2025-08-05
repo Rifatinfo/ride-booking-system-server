@@ -48,6 +48,9 @@ const rideSchema = new Schema({
     cancellationReason: {
         type: String
     }
+},{
+    timestamps : true,
+    versionKey : false
 })
 
 export const Ride = model("Ride", rideSchema); 
