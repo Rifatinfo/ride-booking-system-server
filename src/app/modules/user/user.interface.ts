@@ -22,9 +22,11 @@ export interface IAuthProvider {
 export enum IsActive {
     ACTIVE = "ACTIVE",
     INACTIVE = "INACTIVE",
-    BLOCKED = "BLOCKED"
+    BLOCKED = "BLOCKED",
+    UNBLOCK = "UNBLOCK"
 } 
 
+export type UserState = 'PENDING' | 'APPROVED' | 'SUSPENDED'
 
 export interface IUser {
     userId : string,
@@ -51,6 +53,8 @@ export interface IUser {
         model : string;
         licensePlate : string;
     };
+
+    status? : UserState; 
 
     /* Relational  */
     riderHistory? : string[];   /* RIDER : ride IDs , ist of all completed/cancelled rides*/

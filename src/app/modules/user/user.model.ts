@@ -12,7 +12,7 @@ const userSchema = new Schema<IUser>({
     email : {type : String , required : true},
     password : {type : String},
     phone : {type : String},
-    isBlocked : {type : boolean},
+    isBlocked : {type : boolean, default : false},
     isDeleted : {type : boolean},
     isActive :  {
         type : String ,
@@ -41,6 +41,11 @@ const userSchema = new Schema<IUser>({
     currentRideId : {
         type : Schema.Types.ObjectId,
         ref : 'Ride'
+    },
+    status : {
+        type : String,
+        enum : ['PENDING', 'APPROVED', 'SUSPENDED'],
+        default : 'PENDING'
     }
 },{
     timestamps : true,

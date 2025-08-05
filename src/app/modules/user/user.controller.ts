@@ -8,51 +8,136 @@ import { User } from "./user.model";
 
 const createUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const user = await UserService.createUser(req.body);
+    if (user.status === 'SUSPENDED') {
+        throw new AppError(StatusCodes.FORBIDDEN, "Your Account is Suspended");
+    }
+    if (user.isBlocked) {
+        throw new AppError(StatusCodes.FORBIDDEN, "Your account is blocked.");
+    }
+
     sendResponse(res, {
-        success : true,
-        statusCode : StatusCodes.CREATED,
-        message : "User Created Successfully",
-        data : user
+        success: true,
+        statusCode: StatusCodes.CREATED,
+        message: "User Created Successfully",
+        data: user
     })
 })
 const getAllUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const users = await UserService.getAllUser();
     sendResponse(res, {
-        success : true,
-        statusCode : StatusCodes.OK,
-        message : "All User Retrieved Successfully",
-        data : users.data,
-        meta : users.meta
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "All User Retrieved Successfully",
+        data: users.data,
+        meta: users.meta
     })
 })
 
-const setAvailability = async (req : Request, res : Response) => {
+const setAvailability = async (req: Request, res: Response) => {
     const user = req.user;
-    const {isAvailable} = req.body;
-    
+    const { isAvailable } = req.body;
+
     if (!user) {
         throw new AppError(StatusCodes.UNAUTHORIZED, "User not authenticated");
     }
-    if(typeof isAvailable !== 'boolean'){
-      throw new AppError(StatusCodes.BAD_REQUEST, "isAvailable must be a boolean");
+    if (typeof isAvailable !== 'boolean') {
+        throw new AppError(StatusCodes.BAD_REQUEST, "isAvailable must be a boolean");
     }
     const updatedDriver = await User.findByIdAndUpdate(
         user.userId,
-        {isAvailable},
-        {new : true}
+        { isAvailable },
+        { new: true }
     )
-    if(!updatedDriver){
-       throw new AppError(StatusCodes.BAD_REQUEST, "Driver not Found");
+    if (!updatedDriver) {
+        throw new AppError(StatusCodes.BAD_REQUEST, "Driver not Found");
     }
     sendResponse(res, {
-        success : true,
-        statusCode : StatusCodes.OK,
-        message : `Driver is Now ${isAvailable ? "Online" : "Offline"}`,
-        data : updatedDriver
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: `Driver is Now ${isAvailable ? "Online" : "Offline"}`,
+        data: updatedDriver
     })
+}
+
+// user.controller.ts
+
+const getAllDrivers = async (req: Request, res: Response) => {
+    const drivers = await User.find({ role: "DRIVER" }).select("-password");
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "All drivers fetched successfully",
+        data: drivers
+    });
+};
+
+const updateDriverStatus = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!['APPROVED', 'SUSPENDED'].includes(status)) {
+        throw new AppError(StatusCodes.BAD_REQUEST, "Invalid Status")
+    }
+
+    const updateUser = await User.findByIdAndUpdate(
+        id,
+        { status },
+        { new: true }
+    ).select("-password");
+
+    if (!updateUser) {
+        throw new AppError(StatusCodes.NOT_FOUND, "Driver Not Found");
+    }
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: `Driver ${status.toLowerCase()} successfully`,
+        data: updateUser
+    });
+}
+
+const blockUser = async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    const user = await User.findById(id);
+    if (!user) {
+        throw new AppError(StatusCodes.NOT_FOUND, "User not Founded");
+    }
+
+    user.isBlocked = true;
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: `User has been blocked`,
+        data: user
+    });
+    await user.save();
+}
+const unblockUser = async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    const user = await User.findById(id);
+    if (!user) {
+        throw new AppError(StatusCodes.NOT_FOUND, "User not Founded");
+    }
+
+    user.isBlocked = false;
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: `User has been blocked`,
+        data: user
+    });
+    await user.save();
 }
 export const UserController = {
     createUser,
     getAllUser,
-    setAvailability
+    setAvailability,
+    getAllDrivers,
+    updateDriverStatus,
+    blockUser,
+    unblockUser
 }
