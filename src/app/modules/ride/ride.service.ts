@@ -3,6 +3,8 @@ import AppError from "../../errorHelpers/AppError";
 import { IUser } from "../user/user.interface";
 import { IRide, RideStatus } from "./ride.interface"
 import { Ride } from "./ride.model"
+import { User } from "../user/user.model";
+import mongoose from "mongoose";
 
 const requestRide = async (payload: IRide) => {
     // TODO : driver assignment is optional 
@@ -36,7 +38,30 @@ const updateRideStatus = async (riderId: string, status: RideStatus, user : IUse
     return await ride.save();
 }
 
+const acceptRideService = async (rideId : string, driverId : string, user : IUser)  => {
+    const ride = await Ride.findById(rideId);
+
+    if(!ride){
+       throw new AppError(StatusCodes.BAD_REQUEST, "Ride Not Found");
+    }
+    if(ride.status !== "REQUESTED"){
+       throw new AppError(StatusCodes.BAD_REQUEST, "Ride Not Available for acceptance");
+    }
+
+    user._id =  driverId ;
+    ride.status = "ACCEPTED"
+    ride.acceptedAt = new Date();
+    await ride.save();
+
+    //mark driver as unavailable 
+    await User.findById(driverId, {isAvailable : false})
+
+    return ride;
+
+}
+
 export const RideService = {
     requestRide,
-    updateRideStatus
+    updateRideStatus,
+    acceptRideService
 }
