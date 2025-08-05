@@ -8,6 +8,7 @@ export type RideStatus =
     | "COMPLETED"
     | "CANCEL_BY_RIDER"
     | "CANCEL_BY_DRIVER"
+    
 
 export interface ILocation {
     lat: number;
