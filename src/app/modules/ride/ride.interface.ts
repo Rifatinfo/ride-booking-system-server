@@ -25,8 +25,9 @@ export interface IRide {
     /* Ride Details */
     pickupLocation: ILocation;
     destinationLocation: ILocation;
-    fare?: number;
 
+    fare?: number;
+    
     /* Optional : Timestamps for each status */
     requestedAt?: Date;
     acceptedAt?: Date;

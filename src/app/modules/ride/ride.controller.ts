@@ -59,12 +59,13 @@ const getMyRides = catchAsync(async (req: Request, res: Response) => {
     if (!user) {
         throw new AppError(StatusCodes.UNAUTHORIZED, "User not authenticated");
     }
-
-    const myRides = await Ride.find({ riderId: user._id });
+    
+    const myRides = await RideService.getRidesByRiderId(user.userId);
+    // const myRides = await Ride.find({ riderId: user._id });
     sendResponse(res, {
         success: true,
         statusCode: StatusCodes.OK,
-        message: "My rides fetched Successfully",
+        message: "My History fetched Successfully",
         data: myRides,
     })
 })
@@ -73,6 +74,5 @@ export const RideController = {
     createRideRequest,
     updateRideStatus,
     getMyRides,
-    // acceptRide,
     cancelRiderByRider
 }
