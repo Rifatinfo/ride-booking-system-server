@@ -46,22 +46,28 @@ const updateRideStatus = async (riderId: string, status: RideStatus, user: IUser
             );
         }
 
-        if(ride.status === "CANCEL_BY_RIDER"){
-           console.log("Ride is already canceled by rider");
-        } else if(ride.status === "REQUESTED" || ride.status === "ACCEPTED"){
-           ride.status = "CANCEL_BY_RIDER";
-           ride.canceledAt = new Date();
-           ride.cancellationReason = "Cancel by rider";
+        if (ride.status === "CANCEL_BY_RIDER") {
+            console.log("Ride is already canceled by rider");
+        } else if (ride.status === "REQUESTED" || ride.status === "ACCEPTED") {
+            ride.status = "CANCEL_BY_RIDER";
+            ride.canceledAt = new Date();
+            ride.cancellationReason = "Cancel by rider";
         } else {
             throw new AppError(StatusCodes.BAD_REQUEST, "Cannot cancel this ride at it's current status");
         }
     }
-    
+
 
     return await ride.save();
+}
+
+const getRidesByRiderId = async (riderId: string) => {
+    return Ride.find({riderId}).sort({createdAt : -1})
+
 }
 
 export const RideService = {
     requestRide,
     updateRideStatus,
+    getRidesByRiderId
 }

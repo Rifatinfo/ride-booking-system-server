@@ -8,6 +8,7 @@ export type RideStatus =
     | "COMPLETED"
     | "CANCEL_BY_RIDER"
     | "CANCEL_BY_DRIVER"
+    
 
 export interface ILocation {
     lat: number;
@@ -20,13 +21,14 @@ export interface IRide {
 
     /* Relational */
     riderId: Types.ObjectId;   // User who requested the ride
-    driverId: Types.ObjectId    // Assigned diver 
+    driverId: Types.ObjectId | null;   // Assigned diver 
 
     /* Ride Details */
     pickupLocation: ILocation;
     destinationLocation: ILocation;
-    fare?: number;
 
+    fare?: number;
+    
     /* Optional : Timestamps for each status */
     requestedAt?: Date;
     acceptedAt?: Date;
