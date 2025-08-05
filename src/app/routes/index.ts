@@ -17,7 +17,11 @@ const modulesRoutes = [
     {
         path : "/ride",
         route : RideRoutes
-    }
+    },
+    // {
+    //     path : "/drivers",
+    //     route : DriverRoute
+    // },
 ]
 
 modulesRoutes.forEach((route) => {

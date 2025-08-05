@@ -11,7 +11,7 @@ export enum Role {
     SUPER_ADMIN = "SUPER_ADMIN",
     ADMIN = "ADMIN",
     RIDER = "RIDER",
-    DIVER = "DRIVER"
+    DRIVER = "DRIVER"
 }
 
 export interface IAuthProvider {

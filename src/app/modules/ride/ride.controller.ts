@@ -5,6 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import { sendResponse } from "../../middlewares/sendResponse";
 import AppError from "../../errorHelpers/AppError";
 import { Ride } from "./ride.model";
+import { JwtPayload } from "jsonwebtoken";
 
 const createRideRequest = catchAsync(async (req: Request, res: Response) => {
     const ride = await RideService.requestRide(req.body);
@@ -50,8 +51,27 @@ const getMyRides = catchAsync(async (req: Request, res: Response) => {
     }) 
 })
 
+const acceptRide = catchAsync(async (req:Request, res: Response) => {
+    const user = req.user;
+    const driverId = user?._id as string;
+    const rideId = req.params.id;
+
+     if (!user) {
+        throw new AppError(StatusCodes.BAD_REQUEST, "Not Found User")
+    }
+    
+    const ride = await RideService.acceptRideService(rideId, driverId, user);
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "Rides Accepted Successfully",
+        data: ride,
+    }) 
+})
+
 export const RideController = {
     createRideRequest,
     updateRideStatus,
-    getMyRides
+    getMyRides,
+    acceptRide
 }
