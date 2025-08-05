@@ -17,6 +17,7 @@ const rideSchema = new Schema({
         type: Types.ObjectId,
         ref: "User",
         default: null
+        // required: true
     },
     pickupLocation: {
         type: locationSchema,
@@ -33,6 +34,11 @@ const rideSchema = new Schema({
     },
     fare: {
         type: Number
+    },
+    driverEarning: {
+        type: Number,
+        required: true,
+        default: 0, 
     },
     requestedAt: Date,
     acceptedAt: Date,

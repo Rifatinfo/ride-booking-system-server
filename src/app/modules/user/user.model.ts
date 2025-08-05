@@ -18,6 +18,10 @@ const userSchema = new Schema<IUser>({
         type : String ,
         enum : Object.values(IsActive)
     },
+    isAvailable : {
+        type : String,
+        default : false
+    },
     auth : [authProviderSchema],
     role : {
         type : String,

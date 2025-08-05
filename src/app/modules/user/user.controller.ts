@@ -3,6 +3,8 @@ import { UserService } from "./user.service";
 import { StatusCodes } from 'http-status-codes';
 import { catchAsync } from "../../middlewares/catchAsync";
 import { sendResponse } from "../../middlewares/sendResponse";
+import AppError from "../../errorHelpers/AppError";
+import { User } from "./user.model";
 
 const createUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const user = await UserService.createUser(req.body);
@@ -23,7 +25,34 @@ const getAllUser = catchAsync(async (req: Request, res: Response, next: NextFunc
         meta : users.meta
     })
 })
+
+const setAvailability = async (req : Request, res : Response) => {
+    const user = req.user;
+    const {isAvailable} = req.body;
+    
+    if (!user) {
+        throw new AppError(StatusCodes.UNAUTHORIZED, "User not authenticated");
+    }
+    if(typeof isAvailable !== 'boolean'){
+      throw new AppError(StatusCodes.BAD_REQUEST, "isAvailable must be a boolean");
+    }
+    const updatedDriver = await User.findByIdAndUpdate(
+        user.userId,
+        {isAvailable},
+        {new : true}
+    )
+    if(!updatedDriver){
+       throw new AppError(StatusCodes.BAD_REQUEST, "Driver not Found");
+    }
+    sendResponse(res, {
+        success : true,
+        statusCode : StatusCodes.OK,
+        message : `Driver is Now ${isAvailable ? "Online" : "Offline"}`,
+        data : updatedDriver
+    })
+}
 export const UserController = {
     createUser,
-    getAllUser
+    getAllUser,
+    setAvailability
 }
