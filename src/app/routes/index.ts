@@ -2,6 +2,7 @@ import { Router } from "express";
 import { UserRoutes } from "../modules/user/user.route";
 import { AuthRoutes } from "../modules/auth/auth.route";
 import { RideRoutes } from "../modules/ride/ride.route";
+import { DriverRoute } from "../modules/driver/driver.route";
 
 export const router = Router();
 
@@ -18,10 +19,10 @@ const modulesRoutes = [
         path : "/ride",
         route : RideRoutes
     },
-    // {
-    //     path : "/drivers",
-    //     route : DriverRoute
-    // },
+    {
+        path : "/driver",
+        route : DriverRoute
+    },
 ]
 
 modulesRoutes.forEach((route) => {

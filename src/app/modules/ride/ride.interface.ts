@@ -8,7 +8,7 @@ export type RideStatus =
     | "COMPLETED"
     | "CANCEL_BY_RIDER"
     | "CANCEL_BY_DRIVER"
-    
+
 
 export interface ILocation {
     lat: number;
@@ -28,6 +28,7 @@ export interface IRide {
     destinationLocation: ILocation;
 
     fare?: number;
+    driverEarning? : number;
     
     /* Optional : Timestamps for each status */
     requestedAt?: Date;
@@ -36,6 +37,7 @@ export interface IRide {
     completedAt?: Date;
     canceledAt?: Date;
     
+    status : RideStatus;
     // Cancel By rider or driver 
     cancellationReason? : string;
 }
