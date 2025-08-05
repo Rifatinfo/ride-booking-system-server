@@ -5,7 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import { sendResponse } from "../../middlewares/sendResponse";
 import AppError from "../../errorHelpers/AppError";
 import { Ride } from "./ride.model";
-import { JwtPayload } from "jsonwebtoken";
+import { IUser } from "../user/user.interface";
 
 const createRideRequest = catchAsync(async (req: Request, res: Response) => {
     const ride = await RideService.requestRide(req.body);
@@ -16,6 +16,9 @@ const createRideRequest = catchAsync(async (req: Request, res: Response) => {
         data: ride
     })
 })
+
+
+
 
 const updateRideStatus = catchAsync(async (req: Request, res: Response) => {
     const riderId = req.params.id;
@@ -35,43 +38,41 @@ const updateRideStatus = catchAsync(async (req: Request, res: Response) => {
         data: result,
     })
 })
-
+const cancelRiderByRider = catchAsync(async (req: Request, res: Response) => {
+    const riderId = req.params.id;
+    const user = req.user;
+    console.log(user);
+    
+    if (!user) {
+        throw new AppError(StatusCodes.BAD_REQUEST, "Not Found User")
+    }
+    const ride = await RideService.updateRideStatus(riderId, "CANCEL_BY_RIDER", user);
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "Ride Canceled In Successfully by rider",
+        data: ride
+    })
+})
 const getMyRides = catchAsync(async (req: Request, res: Response) => {
     const user = req.user;
     if (!user) {
         throw new AppError(StatusCodes.UNAUTHORIZED, "User not authenticated");
     }
 
-    const myRides = await Ride.find({riderId : user._id});
+    const myRides = await Ride.find({ riderId: user._id });
     sendResponse(res, {
         success: true,
         statusCode: StatusCodes.OK,
         message: "My rides fetched Successfully",
         data: myRides,
-    }) 
-})
-
-const acceptRide = catchAsync(async (req:Request, res: Response) => {
-    const user = req.user;
-    const driverId = user?._id as string;
-    const rideId = req.params.id;
-
-     if (!user) {
-        throw new AppError(StatusCodes.BAD_REQUEST, "Not Found User")
-    }
-    
-    const ride = await RideService.acceptRideService(rideId, driverId, user);
-    sendResponse(res, {
-        success: true,
-        statusCode: StatusCodes.OK,
-        message: "Rides Accepted Successfully",
-        data: ride,
-    }) 
+    })
 })
 
 export const RideController = {
     createRideRequest,
     updateRideStatus,
     getMyRides,
-    acceptRide
+    // acceptRide,
+    cancelRiderByRider
 }

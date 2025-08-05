@@ -3,8 +3,7 @@ import AppError from "../../errorHelpers/AppError";
 import { IUser } from "../user/user.interface";
 import { IRide, RideStatus } from "./ride.interface"
 import { Ride } from "./ride.model"
-import { User } from "../user/user.model";
-import mongoose from "mongoose";
+
 
 const requestRide = async (payload: IRide) => {
     // TODO : driver assignment is optional 
@@ -17,7 +16,7 @@ const requestRide = async (payload: IRide) => {
     return ride;
 }
 
-const updateRideStatus = async (riderId: string, status: RideStatus, user : IUser) => {
+const updateRideStatus = async (riderId: string, status: RideStatus, user: IUser) => {
     const ride = await Ride.findById(riderId);
     if (!ride) {
         throw new AppError(StatusCodes.BAD_REQUEST, "Ride Not Found");
@@ -30,38 +29,39 @@ const updateRideStatus = async (riderId: string, status: RideStatus, user : IUse
     ride.status = status;
 
     // Timestamp update 
-    if(status === "ACCEPTED") ride.acceptedAt = new Date();
-    if(status === "PICKED") ride.pickedUpAt = new Date();
-    if(status === "COMPLETED") ride.completedAt = new Date();
-    if(status === "CANCEL_BY_DRIVER") ride.canceledAt = new Date();
+    if (status === "ACCEPTED") ride.acceptedAt = new Date();
+    if (status === "PICKED") ride.pickedUpAt = new Date();
+    if (status === "COMPLETED") ride.completedAt = new Date();
+    if (status === "CANCEL_BY_DRIVER") ride.canceledAt = new Date();
+
+    /** If RIDER Cancels */
+    console.log("ride.riderId:", ride.riderId.toString());
+    console.log("user._id:", user.userId);
+    console.log("Ride status before cancel:", ride.status);
+    if (user.role === "RIDER") {
+        if (ride.riderId.toString() !== user.userId) {
+            throw new AppError(
+                StatusCodes.BAD_REQUEST,
+                `Unauthorized rider. Ride belongs to ${ride.riderId}, but you are ${user.userId}`
+            );
+        }
+
+        if(ride.status === "CANCEL_BY_RIDER"){
+           console.log("Ride is already canceled by rider");
+        } else if(ride.status === "REQUESTED" || ride.status === "ACCEPTED"){
+           ride.status = "CANCEL_BY_RIDER";
+           ride.canceledAt = new Date();
+           ride.cancellationReason = "Cancel by rider";
+        } else {
+            throw new AppError(StatusCodes.BAD_REQUEST, "Cannot cancel this ride at it's current status");
+        }
+    }
+    
 
     return await ride.save();
-}
-
-const acceptRideService = async (rideId : string, driverId : string, user : IUser)  => {
-    const ride = await Ride.findById(rideId);
-
-    if(!ride){
-       throw new AppError(StatusCodes.BAD_REQUEST, "Ride Not Found");
-    }
-    if(ride.status !== "REQUESTED"){
-       throw new AppError(StatusCodes.BAD_REQUEST, "Ride Not Available for acceptance");
-    }
-
-    user._id =  driverId ;
-    ride.status = "ACCEPTED"
-    ride.acceptedAt = new Date();
-    await ride.save();
-
-    //mark driver as unavailable 
-    await User.findById(driverId, {isAvailable : false})
-
-    return ride;
-
 }
 
 export const RideService = {
     requestRide,
     updateRideStatus,
-    acceptRideService
 }
