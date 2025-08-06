@@ -47,6 +47,10 @@ const rideSchema = new Schema({
     canceledAt: Date,
     cancellationReason: {
         type: String
+    },
+    cancelAttemptCount : {
+        type : Number,
+        default : 0
     }
 },{
     timestamps : true,
