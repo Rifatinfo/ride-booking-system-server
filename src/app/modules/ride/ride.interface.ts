@@ -20,8 +20,8 @@ export interface IRide {
     _id?: Types.ObjectId;
 
     /* Relational */
-    riderId: Types.ObjectId;   // User who requested the ride
-    driverId: Types.ObjectId | null;   // Assigned diver 
+    riderId?: Types.ObjectId;   // User who requested the ride
+    driverId?: Types.ObjectId | null;   // Assigned diver 
 
     /* Ride Details */
     pickupLocation: ILocation;
