@@ -19,7 +19,7 @@ const requestRide = async (payload: IRide) => {
             $near: {
                 $geometry: {
                     type: 'Point',
-                    coordinate: [pickupLocation.lng, pickupLocation.lat]
+                    coordinates: [pickupLocation.lng, pickupLocation.lat]  
                 },
                 $maxDistance: 5000   // in meter
             }
@@ -45,12 +45,12 @@ const requestRide = async (payload: IRide) => {
 
     /** Check if user already has an active */
     const existingRide = await Ride.findOne({
-        riderId,
-        status: { $in : ['REQUESTED', 'ACCEPTED', 'PICKED_UP', 'IN_TRANSIT']}
+        riderId ,
+        status: { $in: ['REQUESTED', 'ACCEPTED', 'PICKED_UP', 'IN_TRANSIT'] }
     })
 
-    if(existingRide){
-      throw new AppError(StatusCodes.CONFLICT, 'You already have an active');
+    if (existingRide) {
+        throw new AppError(StatusCodes.CONFLICT, 'You already have an active');
     }
 
     // TODO : driver assignment is optional 
@@ -76,7 +76,7 @@ const requestRide = async (payload: IRide) => {
 
 const updateRideStatus = async (riderId: string, status: RideStatus, user: IUser) => {
     const ride = await Ride.findById(riderId);
-    
+
     if (!ride) {
         throw new AppError(StatusCodes.BAD_REQUEST, "Ride Not Found");
     }
@@ -89,15 +89,15 @@ const updateRideStatus = async (riderId: string, status: RideStatus, user: IUser
         throw new AppError(403, 'Suspended or unapproved drivers cannot accept rides');
     }
 
-    if(ride.cancelAttemptCount >= 5){
+    if (ride.cancelAttemptCount >= 5) {
         throw new AppError(403, 'You have reached the maximum number if cancel attempts .');
     }
     const existingDriverRide = await Ride.findOne({
-        driverId :  ride.driverId?.toString(),
-        status : {$in : ['ACCEPTED', 'PICKED']}
+        driverId: ride.driverId?.toString(),
+        status: { $in: ['ACCEPTED', 'PICKED'] }
     });
 
-    if(existingDriverRide){
+    if (existingDriverRide) {
         throw new AppError(StatusCodes.CONFLICT, "You already have am active ride");
     }
 

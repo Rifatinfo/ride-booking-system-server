@@ -22,6 +22,7 @@ const createUser = async (payload : Partial<IUser>) => {
         email,
         password  : hashPassword,
         auth : [authProvider], 
+        role : payload.role,
         ...rest
     })
     return user;
