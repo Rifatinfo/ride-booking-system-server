@@ -56,6 +56,15 @@ export interface IUser {
 
     status? : UserState; 
 
+    location : {
+        type : 'Point';
+        coordinates : [number, number]    // [lng, lat]
+    };
+
+    cancelAttemptCount? : {
+        type : Number,
+    }
+
     /* Relational  */
     riderHistory? : string[];   /* RIDER : ride IDs , ist of all completed/cancelled rides*/
     currentRideId ? : string;   /* DIVER OR RIDER : assigned ride  , one active ride at a time */

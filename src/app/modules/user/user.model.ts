@@ -3,53 +3,69 @@ import { IAuthProvider, IsActive, IUser, Role } from "./user.interface";
 import { boolean } from "zod";
 
 const authProviderSchema = new Schema<IAuthProvider>({
-    provider : {type : String, required : true},
-    providerId : {type : String, required : true}
+    provider: { type: String, required: true },
+    providerId: { type: String, required: true }
 })
 
 const userSchema = new Schema<IUser>({
-    name : {type : String , required : true},
-    email : {type : String , required : true},
-    password : {type : String},
-    phone : {type : String},
-    isBlocked : {type : boolean, default : false},
-    isDeleted : {type : boolean},
-    isActive :  {
-        type : String ,
-        enum : Object.values(IsActive)
+    name: { type: String, required: true },
+    email: { type: String, required: true },
+    password: { type: String },
+    phone: { type: String },
+    isBlocked: { type: boolean, default: false },
+    isDeleted: { type: boolean },
+    isActive: {
+        type: String,
+        enum: Object.values(IsActive)
     },
-    isAvailable : {
-        type : String,
-        default : false
+    isAvailable: {
+        type: String,
+        default: false
     },
-    auth : [authProviderSchema],
-    role : {
-        type : String,
-        enum : Object.values(Role),
-        default : Role.RIDER
+    auth: [authProviderSchema],
+    role: {
+        type: String,
+        enum: Object.values(Role),
+        default: Role.RIDER
     },
-    vehicleInfo  : {
-        model : {type : String},
-        licensePlate : {type : String}
+    vehicleInfo: {
+        model: { type: String },
+        licensePlate: { type: String }
     },
-    riderHistory : [
+    riderHistory: [
         {
-            type : Schema.Types.ObjectId,
-            ref : "Ride",
+            type: Schema.Types.ObjectId,
+            ref: "Ride",
         }
     ],
-    currentRideId : {
-        type : Schema.Types.ObjectId,
-        ref : 'Ride'
+    currentRideId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Ride'
     },
-    status : {
-        type : String,
-        enum : ['PENDING', 'APPROVED', 'SUSPENDED'],
-        default : 'PENDING'
+    status: {
+        type: String,
+        enum: ['PENDING', 'APPROVED', 'SUSPENDED'],
+        default: 'PENDING'
+    },
+    location: {
+        type: {
+            type: String,
+            enum: ['Point'],
+            required: true,
+            default: 'Point'
+        },
+        coordinates : {
+            type : [Number],
+            required: true,
+        } 
+    },
+    cancelAttemptCount : {
+        type : Number,
+        default : 0
     }
-},{
-    timestamps : true,
-    versionKey : false
+}, {
+    timestamps: true,
+    versionKey: false
 })
 
-export const User = model<IUser>("User", userSchema)
+export const User = model<IUser>("User", userSchema.index({ location: '2dsphere' }))

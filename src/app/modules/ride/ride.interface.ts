@@ -40,4 +40,7 @@ export interface IRide {
     status : RideStatus;
     // Cancel By rider or driver 
     cancellationReason? : string;
+    cancelAttemptCount? : {
+        type : Number,
+    }
 }

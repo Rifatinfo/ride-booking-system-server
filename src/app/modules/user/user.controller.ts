@@ -22,6 +22,35 @@ const createUser = catchAsync(async (req: Request, res: Response, next: NextFunc
         data: user
     })
 })
+/* Update Location on Profile Edit By Driver  */
+const goOnline = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { location } = req.body;
+
+    if (!location || !location.coordinate || location.coordinate.length !== 2) {
+        throw new AppError(StatusCodes.FORBIDDEN, "Location is required and must be [lng, lat]");
+    }
+
+    const updatedDriver = await User.findByIdAndUpdate(
+        id,
+        {
+            isAvailable: true,
+            location,
+        },
+        {new : true}
+    )
+
+    if(!updatedDriver){
+      throw new AppError(StatusCodes.BAD_REQUEST, "Driver not found");
+    }
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "Driver is now online and location updated",
+        data: updatedDriver
+    })
+})
 const getAllUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const users = await UserService.getAllUser();
     sendResponse(res, {
@@ -139,5 +168,6 @@ export const UserController = {
     getAllDrivers,
     updateDriverStatus,
     blockUser,
-    unblockUser
+    unblockUser,
+    goOnline
 }

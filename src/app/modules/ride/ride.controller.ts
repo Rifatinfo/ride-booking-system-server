@@ -5,7 +5,6 @@ import { StatusCodes } from "http-status-codes";
 import { sendResponse } from "../../middlewares/sendResponse";
 import AppError from "../../errorHelpers/AppError";
 import { Ride } from "./ride.model";
-import { IUser } from "../user/user.interface";
 
 const createRideRequest = catchAsync(async (req: Request, res: Response) => {
     const ride = await RideService.requestRide(req.body);
@@ -42,7 +41,7 @@ const cancelRiderByRider = catchAsync(async (req: Request, res: Response) => {
     const riderId = req.params.id;
     const user = req.user;
     console.log(user);
-    
+
     if (!user) {
         throw new AppError(StatusCodes.BAD_REQUEST, "Not Found User")
     }
@@ -59,7 +58,7 @@ const getMyRides = catchAsync(async (req: Request, res: Response) => {
     if (!user) {
         throw new AppError(StatusCodes.UNAUTHORIZED, "User not authenticated");
     }
-    
+
     const myRides = await RideService.getRidesByRiderId(user.userId);
     // const myRides = await Ride.find({ riderId: user._id });
     sendResponse(res, {
@@ -70,9 +69,30 @@ const getMyRides = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
+const getRiderRideHistory = async (req: Request, res: Response) => {
+    const user = req.user;
+    if (!user) {
+        throw new AppError(StatusCodes.UNAUTHORIZED, "User not authenticated");
+    }
+
+    const rideHistory = await Ride.find({
+        riderId: user.userId,  
+        status: { $in: ["COMPLETED", "CANCELED"] }
+    }).sort({ requestedAt: -1 }); 
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "Ride History (completed and canceled) fetched Successfully",
+        data: rideHistory,
+    });
+}
+
+
 export const RideController = {
     createRideRequest,
     updateRideStatus,
     getMyRides,
-    cancelRiderByRider
+    cancelRiderByRider,
+    getRiderRideHistory
 }
