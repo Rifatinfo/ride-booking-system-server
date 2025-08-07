@@ -17,7 +17,7 @@ const rideSchema = new Schema({
         type: Types.ObjectId,
         ref: "User",
         default: null
-        // required: true
+        
     },
     pickupLocation: {
         type: locationSchema,
