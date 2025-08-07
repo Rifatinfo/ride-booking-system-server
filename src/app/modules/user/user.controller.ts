@@ -27,7 +27,7 @@ const goOnline = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
     const { location } = req.body;
 
-    if (!location || !location.coordinate || location.coordinate.length !== 2) {
+    if (!location || !location.coordinates || !Array.isArray(location.coordinates) || location.coordinates.length !== 2) {
         throw new AppError(StatusCodes.FORBIDDEN, "Location is required and must be [lng, lat]");
     }
 

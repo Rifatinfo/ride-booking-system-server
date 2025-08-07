@@ -8,12 +8,11 @@ import { Ride } from "./ride.model";
 
 const createRideRequest = catchAsync(async (req: Request, res: Response) => {
     const user = req.user ;
-    console.log(user);
-
-    if (!user) {
+    
+    if (!user || !user.userId) {
         throw new AppError(StatusCodes.BAD_REQUEST, "Not Found User")
     }
-    const ride = await RideService.requestRide(req.body, user.userId);
+    const ride = await RideService.requestRide(req.body, user.userId) ;
     sendResponse(res, {
         success: true,
         statusCode: StatusCodes.CREATED,
@@ -61,7 +60,7 @@ const cancelRiderByRider = catchAsync(async (req: Request, res: Response) => {
 })
 const getMyRides = catchAsync(async (req: Request, res: Response) => {
     const user = req.user;
-    if (!user) {
+    if (!user || !user.userId) {
         throw new AppError(StatusCodes.UNAUTHORIZED, "User not authenticated");
     }
 
@@ -83,7 +82,7 @@ const getRiderRideHistory = async (req: Request, res: Response) => {
 
     const rideHistory = await Ride.find({
         riderId: user.userId,  
-        status: { $in: ["COMPLETED", "CANCELED"] }
+        status: { $in: ["COMPLETED", "CANCELED", "CANCEL_BY_RIDER"] }
     }).sort({ requestedAt: -1 }); 
 
     sendResponse(res, {

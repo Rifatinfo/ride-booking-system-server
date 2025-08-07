@@ -7,10 +7,13 @@ import AppError from "../errorHelpers/AppError"
 import { StatusCodes } from "http-status-codes"
 
 export const createUserToken = (user: Partial<IUser>) => {
+    console.log(user);
+    
     const jwtPayload = {
         userId: user._id,
         email: user.email,
-        role: user.role
+        role: user.role,
+        status: user.status,
     }
 
     const accessToken = generateToken(jwtPayload, envVars.JWT_ACCESS_SECRET, envVars.JWT_ACCESS_EXPIRES)
@@ -38,7 +41,8 @@ export const createNewAccessTokenWithRefreshToken = async (refreshToken: string)
     const jwtPayload = {
         userId: isUserExist._id,
         email: isUserExist.email,
-        role: isUserExist.role
+        role: isUserExist.role,
+        status: isUserExist.status,
     }
 
     const accessToken = generateToken(jwtPayload, envVars.JWT_ACCESS_SECRET, envVars.JWT_ACCESS_EXPIRES);

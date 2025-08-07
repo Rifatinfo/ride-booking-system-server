@@ -29,7 +29,7 @@ export enum IsActive {
 export type UserState = 'PENDING' | 'APPROVED' | 'SUSPENDED'
 
 export interface IUser {
-    userId : string,
+    userId? : string,
     _id? : string;
     name: string;
     email: string;
@@ -56,7 +56,7 @@ export interface IUser {
 
     status? : UserState; 
 
-    location : {
+    location? : {
         type : 'Point';
         coordinates : [number, number]    // [lng, lat]
     };

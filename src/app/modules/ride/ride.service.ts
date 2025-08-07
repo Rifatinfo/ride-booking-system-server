@@ -22,7 +22,7 @@ const requestRide = async (payload: Partial<IRide>, riderId: string) => {
             $near: {
                 $geometry: {
                     type: 'Point',
-                    coordinates: [pickupLocation.lng, pickupLocation.lat]  
+                    coordinates: [pickupLocation.lng, pickupLocation.lat]
                 },
                 $maxDistance: 5000   // in meter
             }
@@ -32,7 +32,7 @@ const requestRide = async (payload: Partial<IRide>, riderId: string) => {
         throw new AppError(StatusCodes.FORBIDDEN, 'No Available drives nearby');
     }
 
-    
+
 
 
     /* Calculate distance using Function  */
@@ -47,15 +47,7 @@ const requestRide = async (payload: Partial<IRide>, riderId: string) => {
     const driverEarning = calculateFare + 0.8;
 
 
-    /** Check if user already has an active */
-    const existingRide = await Ride.findOne({
 
-        status: { $in: ['REQUESTED', 'ACCEPTED', 'PICKED_UP', 'IN_TRANSIT'] }
-    })
-
-    if (existingRide) {
-        throw new AppError(StatusCodes.CONFLICT, 'You already have an active');
-    }
 
     // TODO : driver assignment is optional 
     const ride = await Ride.create({
@@ -70,7 +62,15 @@ const requestRide = async (payload: Partial<IRide>, riderId: string) => {
         requestedAt: new Date()
     })
 
+    /** Check if user already has an active */
+    const existingRide = await Ride.findOne({
 
+        status: { $in: ['REQUESTED', 'ACCEPTED', 'PICKED_UP', 'IN_TRANSIT'] }
+    })
+
+    if (existingRide) {
+        throw new AppError(StatusCodes.CONFLICT, 'You already have an active');
+    }
     // mark driver available
     driver.isAvailable = false;
     await driver.save();
@@ -97,25 +97,25 @@ const updateRideStatus = async (riderId: string, status: RideStatus, user: IUser
         throw new AppError(StatusCodes.BAD_REQUEST, "Ride Not Found");
     }
 
-    if (user.role === "DRIVER" && ride.driverId?.toString() !== user._id) {
-        throw new AppError(StatusCodes.BAD_REQUEST, "You are not the assigned driver for this ride.");
+    if (user.role === "DRIVER") {
+        if (ride.driverId?.toString() !== user._id) {
+            throw new AppError(StatusCodes.BAD_REQUEST, "You are not the assigned driver for this ride.");
+        }
+        if (user.isBlocked || user.status !== 'APPROVED') {
+            throw new AppError(403, 'Suspended or unapproved drivers cannot accept rides');
+        }
     }
+    // if (user.role === "DRIVER" && ride.driverId?.toString() !== user._id) {
+    //     throw new AppError(StatusCodes.BAD_REQUEST, "You are not the assigned driver for this ride.");
+    // }
+    // console.log(user.status);
 
-    if (user.isBlocked || user.status !== 'APPROVED') {
-        throw new AppError(403, 'Suspended or unapproved drivers cannot accept rides');
-    }
+
 
     if (ride.cancelAttemptCount >= 5) {
         throw new AppError(403, 'You have reached the maximum number if cancel attempts .');
     }
-    const existingDriverRide = await Ride.findOne({
-        driverId: ride.driverId?.toString(),
-        status: { $in: ['ACCEPTED', 'PICKED'] }
-    });
 
-    if (existingDriverRide) {
-        throw new AppError(StatusCodes.CONFLICT, "You already have am active ride");
-    }
 
     ride.status = status;
 
@@ -139,7 +139,7 @@ const updateRideStatus = async (riderId: string, status: RideStatus, user: IUser
 
         if (ride.status === "CANCEL_BY_RIDER") {
             console.log("Ride is already canceled by rider");
-        } else if (ride.status === "REQUESTED" || ride.status === "ACCEPTED") {
+        } else if (ride.status === "REQUESTED" || ride.status === "ACCEPTED" || ride.status === "PICKED" || ride.status === "IN_TRANSIT") {
             ride.status = "CANCEL_BY_RIDER";
             ride.canceledAt = new Date();
             ride.cancellationReason = "Cancel by rider";
@@ -147,6 +147,15 @@ const updateRideStatus = async (riderId: string, status: RideStatus, user: IUser
             throw new AppError(StatusCodes.BAD_REQUEST, "Cannot cancel this ride at it's current status");
         }
     }
+
+    //  const existingDriverRide = await Ride.findOne({
+    //     driverId: ride.driverId?.toString(),
+    //     status: { $in: ['ACCEPTED', 'PICKED'] }
+    // });
+
+    // if (existingDriverRide) {
+    //     throw new AppError(StatusCodes.CONFLICT, "You already have an active ride");
+    // }
 
     // Increase cancel attempt count 
     ride.cancelAttemptCount += 1;

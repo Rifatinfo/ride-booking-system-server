@@ -10,6 +10,7 @@ export type RideStatus =
     | "CANCEL_BY_DRIVER"
 
 
+
 export interface ILocation {
     lat: number;
     lng: number;

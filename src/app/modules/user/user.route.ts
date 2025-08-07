@@ -10,5 +10,5 @@ router.patch("/driver/:id/status", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), User
 router.patch('/block/:id', checkAuth(Role.ADMIN, Role.SUPER_ADMIN), UserController.blockUser)
 router.patch('/unblock/:id', checkAuth(Role.ADMIN, Role.SUPER_ADMIN), UserController.unblockUser);
 // Update Location on Profile Edit By Driver 
-router.patch("/:id/online", UserController.goOnline);
+router.patch("/:id/online", checkAuth(Role.DRIVER) ,UserController.goOnline);
 export const UserRoutes = router;
