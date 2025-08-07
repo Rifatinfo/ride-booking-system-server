@@ -7,7 +7,13 @@ import AppError from "../../errorHelpers/AppError";
 import { Ride } from "./ride.model";
 
 const createRideRequest = catchAsync(async (req: Request, res: Response) => {
-    const ride = await RideService.requestRide(req.body);
+    const user = req.user ;
+    console.log(user);
+
+    if (!user) {
+        throw new AppError(StatusCodes.BAD_REQUEST, "Not Found User")
+    }
+    const ride = await RideService.requestRide(req.body, user.userId);
     sendResponse(res, {
         success: true,
         statusCode: StatusCodes.CREATED,

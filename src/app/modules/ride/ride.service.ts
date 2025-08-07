@@ -3,12 +3,15 @@ import AppError from "../../errorHelpers/AppError";
 import { IUser } from "../user/user.interface";
 import { IRide, RideStatus } from "./ride.interface"
 import { Ride } from "./ride.model"
-import { User } from "../user/user.model";
 import calculateDistance from "../../utils/calculateDistance";
+import { User } from "../user/user.model";
 
 
-const requestRide = async (payload: IRide) => {
-    const { pickupLocation, destinationLocation, riderId } = payload;
+const requestRide = async (payload: Partial<IRide>, riderId: string) => {
+    const { pickupLocation, destinationLocation } = payload;
+    if (!pickupLocation || !destinationLocation) {
+        throw new Error("Missing pickup or destination location");
+    }
     /** Find nearest available driver (within 5km) */
     const driver = await User.findOne({
         role: 'DRIVER',
@@ -29,6 +32,7 @@ const requestRide = async (payload: IRide) => {
         throw new AppError(StatusCodes.FORBIDDEN, 'No Available drives nearby');
     }
 
+    
 
 
     /* Calculate distance using Function  */
@@ -45,7 +49,7 @@ const requestRide = async (payload: IRide) => {
 
     /** Check if user already has an active */
     const existingRide = await Ride.findOne({
-        riderId ,
+
         status: { $in: ['REQUESTED', 'ACCEPTED', 'PICKED_UP', 'IN_TRANSIT'] }
     })
 
@@ -73,8 +77,20 @@ const requestRide = async (payload: IRide) => {
 
     return ride;
 }
+// const requestRide = async (payload: Partial<IRide>, riderId: string) => {
+//     const ride = await Ride.create({
+//         ...payload,
+//         riderId, // explicitly set here
+//         driverId: null,
+//         status: "REQUESTED",
+//         requestedAt: new Date()
+//     })
+//     return ride;
+// }
+
 
 const updateRideStatus = async (riderId: string, status: RideStatus, user: IUser) => {
+
     const ride = await Ride.findById(riderId);
 
     if (!ride) {
@@ -114,7 +130,7 @@ const updateRideStatus = async (riderId: string, status: RideStatus, user: IUser
     console.log("user._id:", user.userId);
     console.log("Ride status before cancel:", ride.status);
     if (user.role === "RIDER") {
-        if (ride.riderId.toString() !== user.userId) {
+        if (ride.riderId?.toString() !== user.userId) {
             throw new AppError(
                 StatusCodes.BAD_REQUEST,
                 `Unauthorized rider. Ride belongs to ${ride.riderId}, but you are ${user.userId}`
