@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 
 const createUser = async (payload : Partial<IUser>) => {
     const {password , email, role, ...rest} = payload;
-    const isUserExist = await User.findOne({email});
+    const isUserExist = await User.findOne({email}).select('+status');;
 
     if(isUserExist){
       throw new AppError(StatusCodes.BAD_REQUEST, "User Already Exist");
