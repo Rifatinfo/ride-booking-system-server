@@ -76,6 +76,8 @@ const getMyRides = catchAsync(async (req: Request, res: Response) => {
 
 const getRiderRideHistory = async (req: Request, res: Response) => {
     const user = req.user;
+    console.log(user);
+    
     if (!user) {
         throw new AppError(StatusCodes.UNAUTHORIZED, "User not authenticated");
     }

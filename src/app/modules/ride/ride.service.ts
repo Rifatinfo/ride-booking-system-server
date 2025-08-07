@@ -19,15 +19,15 @@ const requestRide = async (payload: Partial<IRide>, riderId: string) => {
         isAvailable: true,
         isBlocked: false,
         status: 'APPROVED',
-        location: {
-            $near: {
-                $geometry: {
-                    type: 'Point',
-                    coordinates: [pickupLocation.lng, pickupLocation.lat]
-                },
-                $maxDistance: 5000   // in meter
-            }
-        }
+        // location: {
+        //     $near: {
+        //         $geometry: {
+        //             type: 'Point',
+        //             coordinates: [pickupLocation.lng, pickupLocation.lat]
+        //         },
+        //         $maxDistance: 5000   // in meter
+        //     }
+        // }
     })
     if (!driver) {
         throw new AppError(StatusCodes.FORBIDDEN, 'No Available drives nearby , Please rider Near 5km location set update by Driver');
