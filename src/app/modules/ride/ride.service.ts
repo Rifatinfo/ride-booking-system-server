@@ -7,6 +7,7 @@ import calculateDistance from "../../utils/calculateDistance";
 import { User } from "../user/user.model";
 
 
+
 const requestRide = async (payload: Partial<IRide>, riderId: string) => {
     const { pickupLocation, destinationLocation } = payload;
     if (!pickupLocation || !destinationLocation) {
@@ -29,7 +30,7 @@ const requestRide = async (payload: Partial<IRide>, riderId: string) => {
         }
     })
     if (!driver) {
-        throw new AppError(StatusCodes.FORBIDDEN, 'No Available drives nearby');
+        throw new AppError(StatusCodes.FORBIDDEN, 'No Available drives nearby , Please rider Near 5km location set update by Driver');
     }
 
 
@@ -57,19 +58,22 @@ const requestRide = async (payload: Partial<IRide>, riderId: string) => {
         destinationLocation,
         fare: calculateFare,
         driverEarning,
-        driverId: null,
+        driverId: driver._id,
         status: "REQUESTED",
         requestedAt: new Date()
     })
+    console.log(riderId);
 
     /** Check if user already has an active */
-    const existingRide = await Ride.findOne({
+    if (riderId) {
+        const existingRide = await Ride.findOne({
+            riderId,
+            status: { $in: ['ACCEPTED', 'PICKED_UP', 'IN_TRANSIT'] }
+        })
 
-        status: { $in: ['REQUESTED', 'ACCEPTED', 'PICKED_UP', 'IN_TRANSIT'] }
-    })
-
-    if (existingRide) {
-        throw new AppError(StatusCodes.CONFLICT, 'You already have an active');
+        if (existingRide) {
+            throw new AppError(StatusCodes.CONFLICT, 'You already have an active');
+        }
     }
     // mark driver available
     driver.isAvailable = false;
@@ -92,7 +96,8 @@ const requestRide = async (payload: Partial<IRide>, riderId: string) => {
 const updateRideStatus = async (riderId: string, status: RideStatus, user: IUser) => {
 
     const ride = await Ride.findById(riderId);
-
+    console.log(riderId);
+    
     if (!ride) {
         throw new AppError(StatusCodes.BAD_REQUEST, "Ride Not Found");
     }
@@ -112,7 +117,7 @@ const updateRideStatus = async (riderId: string, status: RideStatus, user: IUser
 
 
 
-    if (ride.cancelAttemptCount >= 5) {
+    if (ride.cancelAttemptCount >= 15) {
         throw new AppError(403, 'You have reached the maximum number if cancel attempts .');
     }
 
