@@ -63,6 +63,9 @@ export interface IUser {
 
     cancelAttemptCount? : {
         type : Number,
+    },
+    averageRating? : {
+         type : Number
     }
 
     /* Relational  */

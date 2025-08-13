@@ -62,6 +62,10 @@ const userSchema = new Schema<IUser>({
     cancelAttemptCount : {
         type : Number,
         default : 0
+    },
+    averageRating : {
+        type : Number,
+        default : 0
     }
 }, {
     timestamps: true,
