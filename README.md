@@ -42,6 +42,12 @@ A full-stack ride-hailing platform where riders can request rides and drivers ca
 
 ---
 
+## Live Linkd vercel : 
+
+```
+https://ride-booking-system-server.vercel.app/
+```
+
 ## Designing the API endpoints
 
 ### 🥖 Auth Routes
