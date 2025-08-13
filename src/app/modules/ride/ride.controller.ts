@@ -7,12 +7,12 @@ import AppError from "../../errorHelpers/AppError";
 import { Ride } from "./ride.model";
 
 const createRideRequest = catchAsync(async (req: Request, res: Response) => {
-    const user = req.user ;
-    
+    const user = req.user;
+
     if (!user || !user.userId) {
         throw new AppError(StatusCodes.BAD_REQUEST, "Not Found User")
     }
-    const ride = await RideService.requestRide(req.body, user.userId) ;
+    const ride = await RideService.requestRide(req.body, user.userId);
     sendResponse(res, {
         success: true,
         statusCode: StatusCodes.CREATED,
@@ -21,7 +21,16 @@ const createRideRequest = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
-
+const getCompletedRides = catchAsync(async (req: Request, res: Response) => {
+    const completedRides = await RideService.completedRides();
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.CREATED,
+        message: "Ride Request In Successfully",
+        data: completedRides.data,
+        meta: completedRides.meta
+    })
+})
 
 
 const updateRideStatus = catchAsync(async (req: Request, res: Response) => {
@@ -77,15 +86,15 @@ const getMyRides = catchAsync(async (req: Request, res: Response) => {
 const getRiderRideHistory = async (req: Request, res: Response) => {
     const user = req.user;
     console.log(user);
-    
+
     if (!user) {
         throw new AppError(StatusCodes.UNAUTHORIZED, "User not authenticated");
     }
 
     const rideHistory = await Ride.find({
-        riderId: user.userId,  
-        status: { $in: ["COMPLETED", "CANCELED", "CANCEL_BY_RIDER"] }
-    }).sort({ requestedAt: -1 }); 
+        riderId: user.userId,
+        status: { $in: ["COMPLETED", "CANCEL_BY_DRIVER", "CANCEL_BY_RIDER"] }
+    }).sort({ requestedAt: -1 });
 
     sendResponse(res, {
         success: true,
@@ -95,11 +104,24 @@ const getRiderRideHistory = async (req: Request, res: Response) => {
     });
 }
 
+const getAnalytics = catchAsync(async (req: Request, res: Response) => {
+    const data = await RideService.getAnalytics();
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "Analytics fetched successfully",
+        data: data,
+    });
+})
+
+
 
 export const RideController = {
     createRideRequest,
     updateRideStatus,
     getMyRides,
     cancelRiderByRider,
-    getRiderRideHistory
+    getRiderRideHistory,
+    getCompletedRides,
+    getAnalytics
 }

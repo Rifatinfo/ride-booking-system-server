@@ -56,6 +56,8 @@ A full-stack ride-hailing platform where riders can request rides and drivers ca
 | GET   | `http://localhost:5000/api/ride/cancel-complete-history` | Cancel Complete History |
 | GET   | `http://localhost:5000/api/driver/drivers` | All drivers |
 | GET   | `http://localhost:5000/api/driver/earning` |  Drivers  Earning|
+| GET   | `http://localhost:5000/api/driver/complete` |  Complete Ride|
+| GET   | `http://localhost:5000/api/ride/analytics` | Admin Analytics|
 | PATCH   | `http://localhost:5000/api/driver/set-availability` |  Drivers  Available status|
 
 

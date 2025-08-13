@@ -93,6 +93,21 @@ const requestRide = async (payload: Partial<IRide>, riderId: string) => {
 // }
 
 
+const completedRides = async () => {
+    const completedRides = await Ride.find({ status: "COMPLETED" })
+    if (!completedRides.length) {
+        throw new AppError(StatusCodes.NOT_FOUND, "No Completed rides found")
+    }
+
+    const totalCompleted = await Ride.countDocuments();
+    return {
+        data : completedRides,
+        meta : {
+            total : totalCompleted
+        }
+    }
+}
+
 const updateRideStatus = async (riderId: string, status: RideStatus, user: IUser) => {
 
     const ride = await Ride.findById(riderId);
@@ -172,8 +187,57 @@ const getRidesByRiderId = async (riderId: string) => {
 
 }
 
+const getAnalytics = async () =>{
+    const totalRides = await Ride.countDocuments();
+    const completedRides = await Ride.countDocuments({status : "COMPLETED"});
+    const canceledRides  = await Ride.countDocuments({status : {$in : ["CANCEL_BY_DRIVER", "CANCEL_BY_RIDER"]}});
+    const ongoingRides  = await Ride.countDocuments({status : {$in : ["ACCEPTED" , "PICKED",
+    "IN_TRANSIT"]}});
+
+    console.log(totalRides,completedRides,canceledRides, ongoingRides);
+    const totalRevenueData = await Ride.aggregate([
+        { $match: { status: "COMPLETED" } },
+        { $group: { _id: null, totalRevenue: { $sum: "$fare" }, averageFare: { $avg: "$fare" } } }
+    ]);
+    const topDrivers  = await Ride.aggregate([
+        {$match : {status : "COMPLETED"}},
+        {$group : {_id : "$driverId", rides : {$sum : 1}}},
+        {$sort: {rides : -1}},
+        {$limit : 5},
+        {
+            $lookup : {
+                from : "users",
+                localField : "_id",
+                foreignField : "_id",
+                as : "driver"
+            }
+        },
+        {$unwind : "$driver"},
+        {$project : {driverName : "$driver.name", rides : 1}},
+    ]); 
+
+    const avgDriverRating = await Ride.aggregate([
+        {$match: {status : "COMPLETED", rating: {$exists : true}}},
+        {$group : {_id : null, avgRating : {$avg: "$rating"}}}
+    ])
+
+     return {
+        totalRides,
+        completedRides,
+        canceledRides,
+        ongoingRides,
+        totalRevenue: totalRevenueData[0]?.totalRevenue || 0,
+        averageFare: totalRevenueData[0]?.averageFare || 0,
+        topDrivers,
+        avgDriverRating: avgDriverRating[0]?.avgRating || 0
+    };
+    
+}
+
 export const RideService = {
     requestRide,
     updateRideStatus,
-    getRidesByRiderId
+    getRidesByRiderId,
+    completedRides,
+    getAnalytics
 }
