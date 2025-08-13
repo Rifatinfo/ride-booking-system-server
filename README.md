@@ -51,6 +51,7 @@ A full-stack ride-hailing platform where riders can request rides and drivers ca
 | POST   | `http://localhost:5000/api/users/register` | Register user |
 | POST   | `http://localhost:5000/api/auth/login` | Login User |
 | POST   | `http://localhost:5000/api/auth/logout` | Login User |
+| POST   | `http://localhost:5000/api/rating/driver` |Rating |
 | GET   | `http://localhost:5000/api/users/all-users` |  User All Users|
 | GET   | `http://localhost:5000/api/driver/drivers` |   All Drivers|
 | GET   | `http://localhost:5000/api/ride/cancel-complete-history` | Cancel Complete History |
@@ -179,3 +180,21 @@ If no drivers are found near the rider's location, the system will throw an erro
 }
 
 ```
+# Driver Rating 
+
+| Method | Endpoint               | Description                       |
+|--------|------------------------|-----------------------------------|
+| PATCH   | `http://localhost:5000/api/rating/driver` | Rating |
+
+
+
+```
+{
+  "rideId": "6894b8b1159da91c29116880",
+  "rating": 5,
+  "feedback": "Great ride!"
+}
+
+```
+
+---
