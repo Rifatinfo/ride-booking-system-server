@@ -180,10 +180,13 @@ If no drivers are found near the rider's location, the system will throw an erro
 }
 
 ```
+# Driver Rating 
 
 | Method | Endpoint               | Description                       |
 |--------|------------------------|-----------------------------------|
 | PATCH   | `http://localhost:5000/api/rating/driver` | Rating |
+
+
 
 ```
 {
@@ -193,3 +196,5 @@ If no drivers are found near the rider's location, the system will throw an erro
 }
 
 ```
+
+---
