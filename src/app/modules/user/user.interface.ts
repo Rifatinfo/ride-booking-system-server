@@ -56,10 +56,10 @@ export interface IUser {
 
     status? : UserState; 
 
-    location? : {
-        type : 'Point';
-        coordinates : [number, number]    // [lng, lat]
-    };
+    // location? : {
+    //     type : 'Point';
+    //     coordinates : [number, number]    // [lng, lat]
+    // };
 
     cancelAttemptCount? : {
         type : Number,
