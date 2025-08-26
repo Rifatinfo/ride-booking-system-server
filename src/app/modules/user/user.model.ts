@@ -47,18 +47,17 @@ const userSchema = new Schema<IUser>({
         enum: ['PENDING', 'APPROVED', 'SUSPENDED'],
         default: 'PENDING'
     },
-    location: {
-        type: {
-            type: String,
-            enum: ['Point'],
-            required: true,
-            default: 'Point'
-        },
-        coordinates : {
-            type : [Number],
-            required: true,
-        } 
-    },
+    // location: {
+    //     type: {
+    //         type: String,
+    //         enum: ['Point'],
+    //         default: 'Point'
+    //     },
+    //     coordinates : {
+    //         type : [Number],
+    //         default : undefined
+    //     } 
+    // },
     cancelAttemptCount : {
         type : Number,
         default : 0
