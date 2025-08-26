@@ -51,20 +51,20 @@ const userSchema = new Schema<IUser>({
     //     type: {
     //         type: String,
     //         enum: ['Point'],
-    //         default: 'Point'
+    //         default: 'Point',
     //     },
-    //     coordinates : {
-    //         type : [Number],
-    //         default : undefined
-    //     } 
+    //     coordinates: {
+    //         type: [Number], // [lng, lat]
+    //         default: undefined,
+    //     },
     // },
-    cancelAttemptCount : {
-        type : Number,
-        default : 0
+    cancelAttemptCount: {
+        type: Number,
+        default: 0
     },
-    averageRating : {
-        type : Number,
-        default : 0
+    averageRating: {
+        type: Number,
+        default: 0
     }
 }, {
     timestamps: true,

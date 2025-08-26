@@ -24,13 +24,13 @@ export enum IsActive {
     INACTIVE = "INACTIVE",
     BLOCKED = "BLOCKED",
     UNBLOCK = "UNBLOCK"
-} 
+}
 
 export type UserState = 'PENDING' | 'APPROVED' | 'SUSPENDED'
 
 export interface IUser {
-    userId? : string,
-    _id? : string;
+    userId?: string,
+    _id?: string;
     name: string;
     email: string;
     password?: string;         // Remind hash 
@@ -40,37 +40,37 @@ export interface IUser {
     isBlocked?: boolean;
     isDeleted?: boolean;     /* Soft delete */
     isActive?: IsActive;
-    
+
     //  Role Base 
     role: Role;
-    auth? : IAuthProvider;
-  
+    auth?: IAuthProvider;
+
     // Driver - specific  (conditionally use them)
-    isAvailable ? : boolean;   /* Diver : online/offline */ 
-    isApproved ? : boolean;    /* Diver : Admin Approved */ 
-    isSuspended ? : boolean;   /* Diver : Admin Action */
-    vehicleInfo ? : {
-        model : string;
-        licensePlate : string;
+    isAvailable?: boolean;   /* Diver : online/offline */
+    isApproved?: boolean;    /* Diver : Admin Approved */
+    isSuspended?: boolean;   /* Diver : Admin Action */
+    vehicleInfo?: {
+        model: string;
+        licensePlate: string;
     };
 
-    status? : UserState; 
+    status?: UserState;
 
     // location? : {
     //     type : 'Point';
     //     coordinates : [number, number]    // [lng, lat]
     // };
 
-    cancelAttemptCount? : {
-        type : Number,
+    cancelAttemptCount?: {
+        type: Number,
     },
-    averageRating? : {
-         type : Number
+    averageRating?: {
+        type: Number
     }
 
     /* Relational  */
-    riderHistory? : string[];   /* RIDER : ride IDs , ist of all completed/cancelled rides*/
-    currentRideId ? : string;   /* DIVER OR RIDER : assigned ride  , one active ride at a time */
+    riderHistory?: string[];   /* RIDER : ride IDs , ist of all completed/cancelled rides*/
+    currentRideId?: string;   /* DIVER OR RIDER : assigned ride  , one active ride at a time */
 }
 
 
