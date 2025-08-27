@@ -3,6 +3,8 @@ import { catchAsync } from "../../middlewares/catchAsync";
 import { sendResponse } from "../../middlewares/sendResponse";
 import { OTPService } from "./otp.services";
 
+
+
 const sendOTP = catchAsync(async (req : Request, res : Response) => {
     const {email , name } = req.body;
     await OTPService.sendOTP(email, name);
