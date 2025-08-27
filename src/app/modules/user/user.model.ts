@@ -47,6 +47,7 @@ const userSchema = new Schema<IUser>({
         enum: ['PENDING', 'APPROVED', 'SUSPENDED'],
         default: 'PENDING'
     },
+    isVerified : {type : Boolean, default : false},
     // location: {
     //     type: {
     //         type: String,
