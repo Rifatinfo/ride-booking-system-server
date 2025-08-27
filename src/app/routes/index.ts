@@ -4,6 +4,7 @@ import { AuthRoutes } from "../modules/auth/auth.route";
 import { RideRoutes } from "../modules/ride/ride.route";
 import { DriverRoute } from "../modules/driver/driver.route";
 import { RatingRouts } from "../modules/rating/rating.routes";
+import { OtpRoutes } from "../modules/otp/otp.routes";
 
 export const router = Router();
 
@@ -27,6 +28,10 @@ const modulesRoutes = [
     {
         path : "/rating",
         route : RatingRouts
+    },
+    {
+        path : "/otp",
+        route : OtpRoutes
     }
 ]
 
