@@ -40,6 +40,7 @@ export interface IUser {
     isBlocked?: boolean;
     isDeleted?: boolean;     /* Soft delete */
     isActive?: IsActive;
+    isVerified? : boolean;
 
     //  Role Base 
     role: Role;
