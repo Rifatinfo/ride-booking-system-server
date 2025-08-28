@@ -38,8 +38,19 @@ const getAllUser = async () => {
         }
     };
 }
+const getMe = async () => {
+    const users = await User.findOne({});
+    // const totalUsers = await User.countDocuments();
+    return {
+        data : users,
+        // meta : {
+        //     total : totalUsers
+        // }
+    };
+}
 
 export const UserService = {
     createUser,
-    getAllUser
+    getAllUser,
+    getMe
 }
