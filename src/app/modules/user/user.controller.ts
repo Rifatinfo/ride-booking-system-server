@@ -61,6 +61,15 @@ const getAllUser = catchAsync(async (req: Request, res: Response, next: NextFunc
         meta: users.meta
     })
 })
+const getMe = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const users = await UserService.getMe();
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "User Information Retrieved Successfully",
+        data: users.data,
+    })
+})
 
 const setAvailability = async (req: Request, res: Response) => {
     const user = req.user;
@@ -169,5 +178,6 @@ export const UserController = {
     updateDriverStatus,
     blockUser,
     unblockUser,
-    goOnline
+    goOnline,
+    getMe
 }

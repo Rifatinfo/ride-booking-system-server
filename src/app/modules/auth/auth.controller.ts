@@ -8,7 +8,16 @@ import { setAuthCookie } from "../../utils/setCookies";
 
 const credentialLogin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const loginInfo = await AuthService.credentialLogin(req.body);
-
+    res.cookie("refreshToken", loginInfo.refreshToken , {
+        httpOnly : true,
+        secure : true,
+        sameSite : "none"
+    })
+    res.cookie("accessToken", loginInfo.accessToken , {
+        httpOnly : true,
+        secure :  true,
+        sameSite : "none"
+    })
     sendResponse(res, {
         success: true,
         statusCode: StatusCodes.OK,

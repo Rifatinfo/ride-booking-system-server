@@ -7,7 +7,7 @@ import { IUser } from "../modules/user/user.interface";
 
 export const checkAuth = (...authRole: string[] )  => async (req: Request, res: Response, next: NextFunction) => {
   try{
-     const accessToken = req.headers.authorization;
+     const accessToken = req.headers.authorization || req.cookies.accessToken;
      if(!accessToken){
        throw new AppError(StatusCodes.BAD_REQUEST, "No Token Received");
      }
