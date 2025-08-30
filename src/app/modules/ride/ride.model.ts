@@ -19,12 +19,9 @@ const rideSchema = new Schema({
         default: null
         
     },
-    pickupLocation: {
-        type: locationSchema,
-        required: true
-    },
+    pickupLocation: { type: String, required: true },
     destinationLocation: {
-        type: locationSchema,
+        type: String,
         required: true
     },
     status: {
