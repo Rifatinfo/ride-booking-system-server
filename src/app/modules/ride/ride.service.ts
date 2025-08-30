@@ -37,15 +37,15 @@ const requestRide = async (payload: Partial<IRide>, riderId: string) => {
 
 
     /* Calculate distance using Function  */
-    const distance = calculateDistance(
-        pickupLocation.lat, pickupLocation.lng,
-        destinationLocation.lat, destinationLocation.lng
-    )
+    // const distance = calculateDistance(
+    //     pickupLocation.lat, pickupLocation.lng,
+    //     destinationLocation.lat, destinationLocation.lng
+    // )
 
-    const baseFare = 100;
-    const perKmRate = 20;
-    const calculateFare = baseFare + (distance * perKmRate);
-    const driverEarning = calculateFare + 0.8;
+    // const baseFare = 100;
+    // const perKmRate = 20;
+    // const calculateFare = baseFare + (distance * perKmRate);
+    // const driverEarning = calculateFare + 0.8;
 
 
 
@@ -56,8 +56,8 @@ const requestRide = async (payload: Partial<IRide>, riderId: string) => {
         riderId,
         pickupLocation,
         destinationLocation,
-        fare: calculateFare,
-        driverEarning,
+        // fare: calculateFare,
+        // driverEarning,
         driverId: driver._id,
         status: "REQUESTED",
         requestedAt: new Date()

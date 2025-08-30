@@ -12,8 +12,8 @@ export type RideStatus =
 
 
 export interface ILocation {
-    lat: number;
-    lng: number;
+    lat?: number;
+    lng?: number;
     address?: string
 }
 
@@ -25,8 +25,8 @@ export interface IRide {
     driverId?: Types.ObjectId | null;   // Assigned diver 
 
     /* Ride Details */
-    pickupLocation: ILocation;
-    destinationLocation: ILocation;
+    pickupLocation: string;
+    destinationLocation: string;
 
     fare?: number;
     driverEarning? : number;
