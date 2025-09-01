@@ -21,6 +21,22 @@ const createRideRequest = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
+const getAllRiderRequest = catchAsync(async (req: Request, res: Response) => {
+    // const riderId = req.user?.riderId;
+    // if(!riderId){
+    //       throw new AppError(StatusCodes.BAD_REQUEST, "Not Found Rider Request")
+    // }
+    // console.log(riderId);
+    
+    const rides = await RideService.getAllRiderRequest();
+     sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.CREATED,
+        message: "Ride Request In Successfully",
+        data: rides
+    })
+})
+
 const getCompletedRides = catchAsync(async (req: Request, res: Response) => {
     const completedRides = await RideService.completedRides();
     sendResponse(res, {
@@ -123,5 +139,6 @@ export const RideController = {
     cancelRiderByRider,
     getRiderRideHistory,
     getCompletedRides,
-    getAnalytics
+    getAnalytics,
+    getAllRiderRequest
 }

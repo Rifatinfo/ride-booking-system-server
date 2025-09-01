@@ -70,6 +70,12 @@ const requestRide = async (payload: Partial<IRide>, riderId: string) => {
     return ride;
 }
 
+const getAllRiderRequest = async () => {
+    const rides = await Ride.find({ "status": ["REQUESTED", "ACCEPTED", "PICKED", "IN_TRANSIT", "COMPLETED", "CANCEL_BY_DRIVER"] }).sort({requestedAt : -1}).lean();
+    console.log(rides);
+    
+    return rides;
+}
 
 const completedRides = async () => {
     const completedRides = await Ride.find({ status: "COMPLETED" })
@@ -95,14 +101,14 @@ const updateRideStatus = async (riderId: string, status: RideStatus, user: IUser
         throw new AppError(StatusCodes.BAD_REQUEST, "Ride Not Found");
     }
 
-    if (user.role === "DRIVER") {
-        if (ride.driverId?.toString() !== user._id) {
-            throw new AppError(StatusCodes.BAD_REQUEST, "You are not the assigned driver for this ride.");
-        }
-        if (user.isBlocked || user.status !== 'APPROVED') {
-            throw new AppError(403, 'Suspended or unapproved drivers cannot accept rides');
-        }
-    }
+    // if (user.role === "DRIVER") {
+    //     if (ride.driverId?.toString() !== user._id) {
+    //         throw new AppError(StatusCodes.BAD_REQUEST, "You are not the assigned driver for this ride.");
+    //     }
+    //     if (user.isBlocked || user.status !== 'APPROVED') {
+    //         throw new AppError(403, 'Suspended or unapproved drivers cannot accept rides');
+    //     }
+    // }
     // if (user.role === "DRIVER" && ride.driverId?.toString() !== user._id) {
     //     throw new AppError(StatusCodes.BAD_REQUEST, "You are not the assigned driver for this ride.");
     // }
@@ -146,14 +152,14 @@ const updateRideStatus = async (riderId: string, status: RideStatus, user: IUser
         }
     }
 
-    //  const existingDriverRide = await Ride.findOne({
-    //     driverId: ride.driverId?.toString(),
-    //     status: { $in: ['ACCEPTED', 'PICKED'] }
-    // });
+     const existingDriverRide = await Ride.findOne({
+        driverId: ride.driverId?.toString(),
+        status: { $in: ['COMPLETED'] }
+    });
 
-    // if (existingDriverRide) {
-    //     throw new AppError(StatusCodes.CONFLICT, "You already have an active ride");
-    // }
+    if (existingDriverRide) {
+        throw new AppError(StatusCodes.CONFLICT, "You already have completed Ride");
+    }
 
     // Increase cancel attempt count 
     ride.cancelAttemptCount += 1;
@@ -217,5 +223,6 @@ export const RideService = {
     updateRideStatus,
     getRidesByRiderId,
     completedRides,
-    getAnalytics
+    getAnalytics,
+    getAllRiderRequest
 }

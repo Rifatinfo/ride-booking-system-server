@@ -6,7 +6,8 @@ import { Role } from "../user/user.interface";
 const router = Router();
 
 router.post("/request", checkAuth(Role.RIDER), RideController.createRideRequest);
-router.patch("/:id/status", checkAuth(Role.DRIVER) ,RideController.updateRideStatus);
+router.get("/request", checkAuth(Role.DRIVER),RideController.getAllRiderRequest)
+router.patch("/status/:id", checkAuth(Role.DRIVER) ,RideController.updateRideStatus);
 router.patch("/:id/cancel", checkAuth(Role.RIDER) ,RideController.cancelRiderByRider);
 router.get("/all-history", checkAuth(Role.RIDER, Role.SUPER_ADMIN, Role.ADMIN), RideController.getMyRides);
 router.get('/cancel-complete-history', checkAuth(Role.RIDER), RideController.getRiderRideHistory);
