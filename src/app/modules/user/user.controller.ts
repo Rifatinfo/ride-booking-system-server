@@ -62,7 +62,13 @@ const getAllUser = catchAsync(async (req: Request, res: Response, next: NextFunc
     })
 })
 const getMe = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const users = await UserService.getMe();
+    
+    const userId = req.user?.userId;
+    if(!userId){
+       throw new AppError(StatusCodes.UNAUTHORIZED, "User Not Found");
+    }
+    console.log(userId);
+    const users = await UserService.getMe(userId);
     sendResponse(res, {
         success: true,
         statusCode: StatusCodes.OK,

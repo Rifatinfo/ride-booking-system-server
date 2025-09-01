@@ -38,14 +38,10 @@ const getAllUser = async () => {
         }
     };
 }
-const getMe = async () => {
-    const users = await User.findOne({});
-    // const totalUsers = await User.countDocuments();
-    return {
+const getMe = async (userId : string ) => {
+    const users = await User.findById(userId).select("-password");
+        return {
         data : users,
-        // meta : {
-        //     total : totalUsers
-        // }
     };
 }
 
