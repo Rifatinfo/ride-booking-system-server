@@ -3,8 +3,8 @@ import AppError from "../../errorHelpers/AppError";
 import { IUser } from "../user/user.interface";
 import { IRide, RideStatus } from "./ride.interface"
 import { Ride } from "./ride.model"
-import calculateDistance from "../../utils/calculateDistance";
 import { User } from "../user/user.model";
+import { calculate, getCoordinate, getDistance } from "../../utils/geo/geo";
 
 
 
@@ -14,40 +14,28 @@ const requestRide = async (payload: Partial<IRide>, riderId: string) => {
         throw new Error("Missing pickup or destination location");
     }
     /** Find nearest available driver (within 5km) */
+
+
+     // step -1 
+     const pickupCoords = await getCoordinate(pickupLocation);
+     const destCoords = await getCoordinate(destinationLocation); 
+
+     // step - 2
+     const distance = await getDistance(pickupCoords, destCoords);
+
+     // step - 3
+     const fare = calculate(distance);
+     const driverEarning = fare * 0.8;
+
     const driver = await User.findOne({
         role: 'DRIVER',
         isAvailable: true,
         isBlocked: false,
         status: 'APPROVED',
-        // location: {
-        //     $near: {
-        //         $geometry: {
-        //             type: 'Point',
-        //             coordinates: [pickupLocation.lng, pickupLocation.lat]
-        //         },
-        //         $maxDistance: 5000   // in meter
-        //     }
-        // }
     })
     if (!driver) {
-        throw new AppError(StatusCodes.FORBIDDEN, 'No Available drives nearby , Please rider Near 5km location set update by Driver');
+        throw new AppError(StatusCodes.FORBIDDEN, 'No Available drives');
     }
-
-
-
-
-    /* Calculate distance using Function  */
-    // const distance = calculateDistance(
-    //     pickupLocation.lat, pickupLocation.lng,
-    //     destinationLocation.lat, destinationLocation.lng
-    // )
-
-    // const baseFare = 100;
-    // const perKmRate = 20;
-    // const calculateFare = baseFare + (distance * perKmRate);
-    // const driverEarning = calculateFare + 0.8;
-
-
 
 
     // TODO : driver assignment is optional 
@@ -56,8 +44,8 @@ const requestRide = async (payload: Partial<IRide>, riderId: string) => {
         riderId,
         pickupLocation,
         destinationLocation,
-        // fare: calculateFare,
-        // driverEarning,
+        fare,
+        driverEarning,
         driverId: driver._id,
         status: "REQUESTED",
         requestedAt: new Date()
@@ -81,16 +69,6 @@ const requestRide = async (payload: Partial<IRide>, riderId: string) => {
 
     return ride;
 }
-// const requestRide = async (payload: Partial<IRide>, riderId: string) => {
-//     const ride = await Ride.create({
-//         ...payload,
-//         riderId, // explicitly set here
-//         driverId: null,
-//         status: "REQUESTED",
-//         requestedAt: new Date()
-//     })
-//     return ride;
-// }
 
 
 const completedRides = async () => {
