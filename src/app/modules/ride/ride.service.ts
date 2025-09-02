@@ -152,14 +152,27 @@ const updateRideStatus = async (riderId: string, status: RideStatus, user: IUser
         }
     }
 
-     const existingDriverRide = await Ride.findOne({
-        driverId: ride.driverId?.toString(),
-        status: { $in: ['COMPLETED'] }
-    });
+    //  const existingDriverRide = await Ride.findOne({
+    //     driverId: ride.driverId?.toString(),
+    //     status: { $in: ['COMPLETED'] }
+    // });
 
-    if (existingDriverRide) {
-        throw new AppError(StatusCodes.CONFLICT, "You already have completed Ride");
+    // if (existingDriverRide) {
+    //     throw new AppError(StatusCodes.CONFLICT, "You already have completed Ride");
+    // }
+
+    if(user.role === "DRIVER" && status === "ACCEPTED"){
+       const existingActiveRide = await Ride.findOne({
+        driverId : user._id,
+        status : { $in : ["ACCEPTED" , "PICKED" , "IN_TRANSIT"]}
+       });
+
+       if(existingActiveRide){
+        throw new AppError(StatusCodes.CONFLICT, "You already have an active ride . Complete or cancel it before accepting another");
+       }
     }
+
+    ride.acceptedAt = new Date();
 
     // Increase cancel attempt count 
     ride.cancelAttemptCount += 1;

@@ -88,7 +88,7 @@ const getMyRides = catchAsync(async (req: Request, res: Response) => {
     if (!user || !user.userId) {
         throw new AppError(StatusCodes.UNAUTHORIZED, "User not authenticated");
     }
-
+    console.log(user.userId);
     const myRides = await RideService.getRidesByRiderId(user.userId);
     // const myRides = await Ride.find({ riderId: user._id });
     sendResponse(res, {
