@@ -35,7 +35,7 @@ export interface IUser {
     email: string;
     password?: string;         // Remind hash 
     phone?: string;
-
+    vehicle? : string
     // Account Status 
     isBlocked?: boolean;
     isDeleted?: boolean;     /* Soft delete */

@@ -7,6 +7,7 @@ const router = Router();
 
 router.post("/request", checkAuth(Role.RIDER), RideController.createRideRequest);
 router.get("/request", checkAuth(Role.DRIVER),RideController.getAllRiderRequest);
+router.get("/single-request", checkAuth(Role.RIDER),RideController.getSingleRiderRequest);
 router.patch("/status/:id", checkAuth(Role.DRIVER) ,RideController.updateRideStatus);
 router.patch("/:id/cancel", checkAuth(Role.RIDER) ,RideController.cancelRiderByRider);
 router.get("/all-history", checkAuth(Role.RIDER), RideController.getMyRides);
