@@ -45,8 +45,32 @@ const getMe = async (userId : string ) => {
     };
 }
 
+const changePasswordService =  async (userId: string, oldPassword: string, newPassword: string) => {
+    const user = await User.findById(userId).select("+password"); // include password
+    if (!user) {
+      throw new AppError(StatusCodes.BAD_REQUEST, "User not found");
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password as string);
+    if (!isMatch) {
+      throw new AppError(StatusCodes.BAD_REQUEST, "Old password is incorrect");
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    // return safe info (not password)
+    return {
+      _id: user._id,
+      email: user.email,
+      role: user.role,
+    };
+  }
+
+
 export const UserService = {
     createUser,
     getAllUser,
-    getMe
+    getMe,
+    changePasswordService
 }
