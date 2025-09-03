@@ -11,7 +11,7 @@ router.get("/all-drivers", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), UserControll
 router.patch("/driver/:id/status", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), UserController.updateDriverStatus)
 router.patch('/block/:id', checkAuth(Role.ADMIN, Role.SUPER_ADMIN), UserController.blockUser)
 router.patch('/unblock/:id', checkAuth(Role.ADMIN, Role.SUPER_ADMIN), UserController.unblockUser);
-// Update Location on Profile Edit By Driver 
 router.patch("/:id/online", checkAuth(Role.DRIVER) ,UserController.goOnline);
+router.post("/change-password", checkAuth(Role.DRIVER, Role.ADMIN, Role.RIDER), UserController.changePasswordController);
 export const UserRoutes = router;
 

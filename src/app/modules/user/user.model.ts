@@ -1,7 +1,6 @@
 import { model, Schema } from "mongoose";
 import { IAuthProvider, IsActive, IUser, Role } from "./user.interface";
 import { boolean } from "zod";
-import { finalizeIssue } from "zod/v4/core/util.cjs";
 
 const authProviderSchema = new Schema<IAuthProvider>({
     provider: { type: String, required: true },
@@ -46,21 +45,11 @@ const userSchema = new Schema<IUser>({
     },
     status: {
         type: String,
-        enum: ['PENDING', 'APPROVED', 'SUSPENDED'],
+        enum: ['PENDING', 'APPROVED', 'SUSPENDED', "BLOCKED", "COMPLETED", "PICKED" , "IN_TRANSIT", "REQUESTED"],
         default: 'PENDING'
     },
     isVerified : {type : Boolean, default : false},
-    // location: {
-    //     type: {
-    //         type: String,
-    //         enum: ['Point'],
-    //         default: 'Point',
-    //     },
-    //     coordinates: {
-    //         type: [Number], // [lng, lat]
-    //         default: undefined,
-    //     },
-    // },
+
     cancelAttemptCount: {
         type: Number,
         default: 0

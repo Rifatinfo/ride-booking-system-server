@@ -176,6 +176,36 @@ const unblockUser = async (req: Request, res: Response) => {
     });
     await user.save();
 }
+const changePasswordController = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.userId; // from checkAuth
+    if (!userId) {
+      throw new AppError(StatusCodes.BAD_REQUEST, "User not found");
+    }
+
+    const { oldPassword, newPassword } = req.body;
+    if (!oldPassword || !newPassword) {
+      throw new AppError(StatusCodes.BAD_REQUEST, "Both old and new passwords are required");
+    }
+
+    const result = await UserService.changePasswordService(userId, oldPassword, newPassword);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "Password changed successfully",
+      data: result, // return some safe info (not password)
+    });
+  } catch (error: any) {
+    console.error("Change password error:", error);
+    res.status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: error.message || "Something went wrong",
+    });
+  }
+};
+
+
 export const UserController = {
     createUser,
     getAllUser,
@@ -185,5 +215,6 @@ export const UserController = {
     blockUser,
     unblockUser,
     goOnline,
-    getMe
+    getMe,
+    changePasswordController
 }
