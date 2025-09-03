@@ -5,6 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import { sendResponse } from "../../middlewares/sendResponse";
 import AppError from "../../errorHelpers/AppError";
 import { Ride } from "./ride.model";
+import { User } from "../user/user.model";
 
 const createRideRequest = catchAsync(async (req: Request, res: Response) => {
     const user = req.user;
@@ -22,20 +23,49 @@ const createRideRequest = catchAsync(async (req: Request, res: Response) => {
 })
 
 const getAllRiderRequest = catchAsync(async (req: Request, res: Response) => {
-    // const riderId = req.user?.riderId;
-    // if(!riderId){
-    //       throw new AppError(StatusCodes.BAD_REQUEST, "Not Found Rider Request")
-    // }
-    // console.log(riderId);
-    
     const rides = await RideService.getAllRiderRequest();
-     sendResponse(res, {
+    sendResponse(res, {
         success: true,
         statusCode: StatusCodes.CREATED,
         message: "Ride Request In Successfully",
         data: rides
     })
+}) 
+const getSingleRiderRequest = catchAsync(async (req: Request, res: Response) => {
+    const riderId = req.user;
+    if (!riderId) {
+        throw new AppError(StatusCodes.BAD_REQUEST, "Not Found Rider Request")
+    }
+    console.log(riderId);
+    const rides = await Ride.findOne({
+        riderId: riderId.userId, // the logged-in rider
+        status: { $in: ["REQUESTED", "ACCEPTED", "PICKED_UP", "IN_TRANSIT", "COMPLETED", "CANCELED"] },
+    })
+        .sort({ requestedAt: -1 })
+        .lean();
+
+    console.log(rides);
+
+    // fetch driver info manually 
+    let driverInfo = null;
+    if (rides?.driverId) {
+       driverInfo = await User.findById(rides.driverId)
+        .lean();
+    }
+
+    const rideWithDriver = {
+        ...rides,
+        driver: driverInfo, 
+    };
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "Ride Request In Successfully",
+        data: rideWithDriver
+    })
 })
+
+
 
 const getCompletedRides = catchAsync(async (req: Request, res: Response) => {
     const completedRides = await RideService.completedRides();
@@ -99,6 +129,8 @@ const getMyRides = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
+
+
 const getRiderRideHistory = async (req: Request, res: Response) => {
     const user = req.user;
     console.log(user);
@@ -120,6 +152,20 @@ const getRiderRideHistory = async (req: Request, res: Response) => {
     });
 }
 
+const rideDetailsController = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const ride = await RideService.getRideById(id);
+    if (!ride) {
+        throw new AppError(StatusCodes.NOT_FOUND, "Ride not found");
+    }
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "Ride Details fetched successfully",
+        data: ride,
+    });
+})
+
 const getAnalytics = catchAsync(async (req: Request, res: Response) => {
     const data = await RideService.getAnalytics();
     sendResponse(res, {
@@ -140,5 +186,8 @@ export const RideController = {
     getRiderRideHistory,
     getCompletedRides,
     getAnalytics,
-    getAllRiderRequest
+    getAllRiderRequest,
+    rideDetailsController,
+    getSingleRiderRequest
+
 }

@@ -184,6 +184,10 @@ const getRidesByRiderId = async (riderId: string) => {
 
 }
 
+const getRideById = async (rideId: string) => {
+  return Ride.findById(rideId);
+};
+
 const getAnalytics = async () =>{
     const totalRides = await Ride.countDocuments();
     const completedRides = await Ride.countDocuments({status : "COMPLETED"});
@@ -237,5 +241,7 @@ export const RideService = {
     getRidesByRiderId,
     completedRides,
     getAnalytics,
-    getAllRiderRequest
+    getAllRiderRequest,
+    getRideById,
+    
 }
