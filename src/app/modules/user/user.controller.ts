@@ -25,17 +25,17 @@ const createUser = catchAsync(async (req: Request, res: Response, next: NextFunc
 /* Update Location on Profile Edit By Driver  */
 const goOnline = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { location } = req.body;
+    // const { location } = req.body;
 
-    if (!location || !location.coordinates || !Array.isArray(location.coordinates) || location.coordinates.length !== 2) {
-        throw new AppError(StatusCodes.FORBIDDEN, "Location is required and must be [lng, lat]");
-    }
+    // if (!location || !location.coordinates || !Array.isArray(location.coordinates) || location.coordinates.length !== 2) {
+    //     throw new AppError(StatusCodes.FORBIDDEN, "Location is required and must be [lng, lat]");
+    // }
 
     const updatedDriver = await User.findByIdAndUpdate(
         id,
         {
             isAvailable: true,
-            location,
+            // location,
         },
         {new : true}
     )
