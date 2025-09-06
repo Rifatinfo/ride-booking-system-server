@@ -25,17 +25,17 @@ const createUser = catchAsync(async (req: Request, res: Response, next: NextFunc
 /* Update Location on Profile Edit By Driver  */
 const goOnline = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { location } = req.body;
+    // const { location } = req.body;
 
-    if (!location || !location.coordinates || !Array.isArray(location.coordinates) || location.coordinates.length !== 2) {
-        throw new AppError(StatusCodes.FORBIDDEN, "Location is required and must be [lng, lat]");
-    }
+    // if (!location || !location.coordinates || !Array.isArray(location.coordinates) || location.coordinates.length !== 2) {
+    //     throw new AppError(StatusCodes.FORBIDDEN, "Location is required and must be [lng, lat]");
+    // }
 
     const updatedDriver = await User.findByIdAndUpdate(
         id,
         {
             isAvailable: true,
-            location,
+            // location,
         },
         {new : true}
     )
@@ -205,6 +205,44 @@ const changePasswordController = async (req: Request, res: Response) => {
   }
 };
 
+const allUsers = async (req: Request, res: Response) => {
+    const allUsers = await User.find().select("-password");
+    
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "All Users fetched successfully",
+        data: allUsers
+    });
+};
+const toggleBlocked = async (req: Request, res: Response) => {
+    const userId = req.params;
+    console.log(userId.userId);
+    
+    const { isBlocked } = req.body;
+
+    if (!userId) {
+        throw new AppError(StatusCodes.UNAUTHORIZED, "User not authenticated");
+    }
+    if (typeof isBlocked !== 'boolean') {
+        throw new AppError(StatusCodes.BAD_REQUEST, "isBlocked must be a boolean");
+    }
+    const updatedUser = await User.findByIdAndUpdate(
+        userId.userId,
+        { isBlocked },
+        { new: true }
+    )
+    if (!updatedUser) {
+        throw new AppError(StatusCodes.BAD_REQUEST, "User not Found");
+    }
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: `User ${isBlocked ? "blocked" : "unblocked"} successfully`,
+        data: updatedUser
+    });
+};
 
 export const UserController = {
     createUser,
@@ -216,5 +254,7 @@ export const UserController = {
     unblockUser,
     goOnline,
     getMe,
-    changePasswordController
+    changePasswordController,
+    allUsers,
+    toggleBlocked
 }
