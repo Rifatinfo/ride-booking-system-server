@@ -205,6 +205,44 @@ const changePasswordController = async (req: Request, res: Response) => {
   }
 };
 
+const allUsers = async (req: Request, res: Response) => {
+    const allUsers = await User.find().select("-password");
+    
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "All Users fetched successfully",
+        data: allUsers
+    });
+};
+const toggleBlocked = async (req: Request, res: Response) => {
+    const userId = req.params;
+    console.log(userId.userId);
+    
+    const { isBlocked } = req.body;
+
+    if (!userId) {
+        throw new AppError(StatusCodes.UNAUTHORIZED, "User not authenticated");
+    }
+    if (typeof isBlocked !== 'boolean') {
+        throw new AppError(StatusCodes.BAD_REQUEST, "isBlocked must be a boolean");
+    }
+    const updatedUser = await User.findByIdAndUpdate(
+        userId.userId,
+        { isBlocked },
+        { new: true }
+    )
+    if (!updatedUser) {
+        throw new AppError(StatusCodes.BAD_REQUEST, "User not Found");
+    }
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: `User ${isBlocked ? "blocked" : "unblocked"} successfully`,
+        data: updatedUser
+    });
+};
 
 export const UserController = {
     createUser,
@@ -216,5 +254,7 @@ export const UserController = {
     unblockUser,
     goOnline,
     getMe,
-    changePasswordController
+    changePasswordController,
+    allUsers,
+    toggleBlocked
 }

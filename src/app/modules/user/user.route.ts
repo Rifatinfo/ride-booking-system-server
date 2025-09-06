@@ -14,5 +14,8 @@ router.patch('/unblock/:id', checkAuth(Role.ADMIN, Role.SUPER_ADMIN), UserContro
 router.patch("/:id/online", checkAuth(Role.DRIVER) ,UserController.goOnline);
 router.post("/change-password", checkAuth(Role.DRIVER, Role.ADMIN, Role.RIDER, Role.DRIVER), UserController.changePasswordController);
 router.patch("/availability", checkAuth(Role.DRIVER), UserController.setAvailability);
+router.get("/", UserController.allUsers);
+router.get("/", UserController.allUsers);
+router.patch("/toggle-block/:userId", UserController.toggleBlocked);
 export const UserRoutes = router;
 
