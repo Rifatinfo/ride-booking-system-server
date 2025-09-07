@@ -5,10 +5,18 @@ import { IRide, RideStatus } from "./ride.interface"
 import { Ride } from "./ride.model"
 import { User } from "../user/user.model";
 import { calculate, getCoordinate, getDistance } from "../../utils/geo/geo";
+import { Payment } from "../payment/payment.model";
+import { PAYMENT_STATUS } from "../payment/payment.interface";
 
-
+const getTransactionId = () => {
+    return `tran_${Date.now()}_${Math.floor(Math.random()) * 1000}`
+}
 
 const requestRide = async (payload: Partial<IRide>, riderId: string) => {
+    const transactionId = getTransactionId();
+    const session = await Ride.startSession();
+    session.startTransaction();
+
     const { pickupLocation, destinationLocation } = payload;
     if (!pickupLocation || !destinationLocation) {
         throw new Error("Missing pickup or destination location");
@@ -39,7 +47,8 @@ const requestRide = async (payload: Partial<IRide>, riderId: string) => {
 
 
     // TODO : driver assignment is optional 
-    const ride = await Ride.create({
+    const ride = await Ride.create([
+        {
         ...payload,
         riderId,
         pickupLocation,
@@ -49,7 +58,8 @@ const requestRide = async (payload: Partial<IRide>, riderId: string) => {
         driverId: driver._id,
         status: "REQUESTED",
         requestedAt: new Date()
-    })
+    }
+    ], {session})
     console.log(riderId);
 
     /** Check if user already has an active */
@@ -65,9 +75,25 @@ const requestRide = async (payload: Partial<IRide>, riderId: string) => {
     }
     // mark driver available
     driver.isAvailable = false;
+
+    // // Payment Related 
+    const payment = await Payment.create([
+        {
+        ride : ride[0]._id,
+        user : riderId,
+        amount : fare,
+        transactionId : transactionId,
+        paymentStatus : PAYMENT_STATUS.PENDING
+    }
+    ], {session})
+    await session.commitTransaction();
+    session.endSession();
     await driver.save();
 
-    return ride;
+    return {
+        ride,
+        payment
+    };
 }
 
 const getAllRiderRequest = async () => {

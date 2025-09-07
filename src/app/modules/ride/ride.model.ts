@@ -1,11 +1,5 @@
 import { model, Schema, Types } from "mongoose";
 
-const locationSchema = new Schema({
-    lat: { type: Number, required: true },
-    lng: { type: Number, required: true }
-}, {
-    _id: false
-})
 
 const rideSchema = new Schema({
     riderId: {
@@ -48,7 +42,9 @@ const rideSchema = new Schema({
     cancelAttemptCount : {
         type : Number,
         default : 0
-    }
+    },
+    payment: { type: Schema.Types.ObjectId, ref: "Payment" },
+
 },{
     timestamps : true,
     versionKey : false
