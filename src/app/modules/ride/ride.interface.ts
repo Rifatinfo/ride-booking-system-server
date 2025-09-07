@@ -37,7 +37,7 @@ export interface IRide {
     pickedUpAt?: Date;
     completedAt?: Date;
     canceledAt?: Date;
-    
+    payment ? : Types.ObjectId;
     status : RideStatus;
     // Cancel By rider or driver 
     cancellationReason? : string;
