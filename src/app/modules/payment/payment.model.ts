@@ -1,6 +1,5 @@
 import { model, Schema } from "mongoose";
 import { IPayment, PAYMENT_STATUS } from "./payment.interface";
-import { string } from "zod/v4/core/regexes.cjs";
 
 const paymentSchema = new Schema<IPayment>({
     ride : {type : Schema.Types.ObjectId, ref : "Ride", required : true},

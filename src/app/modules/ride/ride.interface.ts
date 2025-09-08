@@ -8,6 +8,7 @@ export type RideStatus =
     | "COMPLETED"
     | "CANCEL_BY_RIDER"
     | "CANCEL_BY_DRIVER"
+    | "PAYMENT_COMPLETE"
 
 
 

@@ -7,99 +7,133 @@ import { User } from "../user/user.model";
 import { calculate, getCoordinate, getDistance } from "../../utils/geo/geo";
 import { Payment } from "../payment/payment.model";
 import { PAYMENT_STATUS } from "../payment/payment.interface";
+import { ISSLCommerz } from "../sslCommerz/sslCommerz.interface";
+import { SSLService } from "../sslCommerz/sslCommerz.service";
 
 const getTransactionId = () => {
     return `tran_${Date.now()}_${Math.floor(Math.random()) * 1000}`
 }
+
 
 const requestRide = async (payload: Partial<IRide>, riderId: string) => {
     const transactionId = getTransactionId();
     const session = await Ride.startSession();
     session.startTransaction();
 
-    const { pickupLocation, destinationLocation } = payload;
-    if (!pickupLocation || !destinationLocation) {
-        throw new Error("Missing pickup or destination location");
-    }
-    /** Find nearest available driver (within 5km) */
+    try {
+        const { pickupLocation, destinationLocation } = payload;
+        if (!pickupLocation || !destinationLocation) {
+            throw new Error("Missing pickup or destination location");
+        }
 
-
-     // step -1 
-     const pickupCoords = await getCoordinate(pickupLocation);
-     const destCoords = await getCoordinate(destinationLocation); 
-
-     // step - 2
-     const distance = await getDistance(pickupCoords, destCoords);
-
-     // step - 3
-     const fare = calculate(distance);
-     const driverEarning = fare * 0.8;
-
-    const driver = await User.findOne({
-        role: 'DRIVER',
-        isAvailable: true,
-        isBlocked: false,
-        status: 'APPROVED',
-    })
-    if (!driver) {
-        throw new AppError(StatusCodes.FORBIDDEN, 'No Available drives');
-    }
-
-
-    // TODO : driver assignment is optional 
-    const ride = await Ride.create([
-        {
-        ...payload,
-        riderId,
-        pickupLocation,
-        destinationLocation,
-        fare,
-        driverEarning,
-        driverId: driver._id,
-        status: "REQUESTED",
-        requestedAt: new Date()
-    }
-    ], {session})
-    console.log(riderId);
-
-    /** Check if user already has an active */
-    if (riderId) {
+        // Check active ride first
         const existingRide = await Ride.findOne({
             riderId,
-            status: { $in: ['ACCEPTED', 'PICKED_UP', 'IN_TRANSIT'] }
-        })
+            status: { $in: ["ACCEPTED", "PICKED_UP", "IN_TRANSIT"] },
+        }).session(session);
 
         if (existingRide) {
-            throw new AppError(StatusCodes.CONFLICT, 'You already have an active');
+            throw new AppError(StatusCodes.CONFLICT, "You already have an active ride");
         }
-    }
-    // mark driver available
-    driver.isAvailable = false;
 
-    // // Payment Related 
-    const payment = await Payment.create([
-        {
-        ride : ride[0]._id,
-        user : riderId,
-        amount : fare,
-        transactionId : transactionId,
-        paymentStatus : PAYMENT_STATUS.PENDING
-    }
-    ], {session})
-    await session.commitTransaction();
-    session.endSession();
-    await driver.save();
+        // Coordinates + fare
+        const pickupCoords = await getCoordinate(pickupLocation);
+        const destCoords = await getCoordinate(destinationLocation);
+        const distance = await getDistance(pickupCoords, destCoords);
+        const fare = calculate(distance);
+        const driverEarning = fare * 0.8;
 
-    return {
-        ride,
-        payment
-    };
-}
+        // Find driver
+        const driver = await User.findOne({
+            role: "DRIVER",
+            isAvailable: true,
+            isBlocked: false,
+            status: "APPROVED",
+        }).session(session);
+
+        if (!driver) {
+            throw new AppError(StatusCodes.FORBIDDEN, "No available drivers");
+        }
+
+        // Create ride
+        const ride = await Ride.create(
+            [
+                {
+                    ...payload,
+                    riderId,
+                    pickupLocation,
+                    destinationLocation,
+                    fare,
+                    driverEarning,
+                    driverId: driver._id,
+                    status: "REQUESTED",
+                    requestedAt: new Date(),
+                },
+            ],
+            { session }
+        );
+
+        // Create payment
+        const payment = await Payment.create(
+            [
+                {
+                    ride: ride[0]._id,
+                    user: riderId,
+                    amount: fare,
+                    transactionId,
+                    paymentStatus: PAYMENT_STATUS.UNPAID,
+                },
+            ],
+            { session }
+        );
+        
+        const updatedRide = await Ride.findByIdAndUpdate(
+            ride[0]._id,
+            {payment : payment[0]._id},
+            {new : true, runValidators : true , session}
+        )
+        .populate("riderId", "name email")
+        .populate("driverId", "name email")
+        .populate("payment")
+
+        // Fetch user Details 
+        const user = await User.findById(riderId).select("name email").session(session);
+        if (!user) {
+            throw new AppError(StatusCodes.FORBIDDEN, "Rider Not Found");
+        }
+
+        const userEmail = user.email;
+        const userName = user.name;   
+        
+        const sslPayload: ISSLCommerz = {
+            email: userEmail,
+            name: userName,
+            amount: fare,
+            transactionId: transactionId
+        }
+        const sslPayment = await SSLService.sslPaymentInit(sslPayload)
+        // Mark driver unavailable
+        driver.isAvailable = false;
+        await driver.save({ session });
+
+        await session.commitTransaction();
+        ride[0].payment = payment[0]._id;
+        await ride[0].save({ session });
+        return { ride: updatedRide, payment: sslPayment.GatewayPageURL };
+        // return { ride: updatedRide, payment: sslPayment };
+    } catch (error) {
+        await session.abortTransaction();
+        throw error;
+    } finally {
+        session.endSession();
+    }
+};
+
 
 const getAllRiderRequest = async () => {
-    const rides = await Ride.find({ "status": ["REQUESTED", "ACCEPTED", "PICKED", "IN_TRANSIT", "COMPLETED", "CANCEL_BY_DRIVER"] }).sort({requestedAt : -1}).lean();
+    const rides = await Ride.find({ "status": ["REQUESTED", "ACCEPTED", "PICKED", "IN_TRANSIT", "COMPLETED", "CANCEL_BY_DRIVER"] }).sort({ requestedAt: -1 }).lean();
     console.log(rides);
-    
+
     return rides;
 }
 
@@ -111,9 +145,9 @@ const completedRides = async () => {
 
     const totalCompleted = await Ride.countDocuments();
     return {
-        data : completedRides,
-        meta : {
-            total : totalCompleted
+        data: completedRides,
+        meta: {
+            total: totalCompleted
         }
     }
 }
@@ -122,7 +156,7 @@ const updateRideStatus = async (riderId: string, status: RideStatus, user: IUser
 
     const ride = await Ride.findById(riderId);
     console.log(riderId);
-    
+
     if (!ride) {
         throw new AppError(StatusCodes.BAD_REQUEST, "Ride Not Found");
     }
@@ -154,6 +188,7 @@ const updateRideStatus = async (riderId: string, status: RideStatus, user: IUser
     if (status === "PICKED") ride.pickedUpAt = new Date();
     if (status === "COMPLETED") ride.completedAt = new Date();
     if (status === "CANCEL_BY_DRIVER") ride.canceledAt = new Date();
+
 
     /** If RIDER Cancels */
     console.log("ride.riderId:", ride.riderId.toString());
@@ -187,15 +222,15 @@ const updateRideStatus = async (riderId: string, status: RideStatus, user: IUser
     //     throw new AppError(StatusCodes.CONFLICT, "You already have completed Ride");
     // }
 
-    if(user.role === "DRIVER" && status === "ACCEPTED"){
-       const existingActiveRide = await Ride.findOne({
-        driverId : user._id,
-        status : { $in : ["ACCEPTED" , "PICKED" , "IN_TRANSIT"]}
-       });
+    if (user.role === "DRIVER" && status === "ACCEPTED") {
+        const existingActiveRide = await Ride.findOne({
+            driverId: user._id,
+            status: { $in: ["ACCEPTED", "PICKED", "IN_TRANSIT"] }
+        });
 
-       if(existingActiveRide){
-        throw new AppError(StatusCodes.CONFLICT, "You already have an active ride . Complete or cancel it before accepting another");
-       }
+        if (existingActiveRide) {
+            throw new AppError(StatusCodes.CONFLICT, "You already have an active ride . Complete or cancel it before accepting another");
+        }
     }
 
     ride.acceptedAt = new Date();
@@ -211,44 +246,48 @@ const getRidesByRiderId = async (riderId: string) => {
 }
 
 const getRideById = async (rideId: string) => {
-  return Ride.findById(rideId);
+    return Ride.findById(rideId);
 };
 
-const getAnalytics = async () =>{
+const getAnalytics = async () => {
     const totalRides = await Ride.countDocuments();
-    const completedRides = await Ride.countDocuments({status : "COMPLETED"});
-    const canceledRides  = await Ride.countDocuments({status : {$in : ["CANCEL_BY_DRIVER", "CANCEL_BY_RIDER"]}});
-    const ongoingRides  = await Ride.countDocuments({status : {$in : ["ACCEPTED" , "PICKED",
-    "IN_TRANSIT"]}});
+    const completedRides = await Ride.countDocuments({ status: "COMPLETED" });
+    const canceledRides = await Ride.countDocuments({ status: { $in: ["CANCEL_BY_DRIVER", "CANCEL_BY_RIDER"] } });
+    const ongoingRides = await Ride.countDocuments({
+        status: {
+            $in: ["ACCEPTED", "PICKED",
+                "IN_TRANSIT"]
+        }
+    });
 
-    console.log(totalRides,completedRides,canceledRides, ongoingRides);
+    console.log(totalRides, completedRides, canceledRides, ongoingRides);
     const totalRevenueData = await Ride.aggregate([
         { $match: { status: "COMPLETED" } },
         { $group: { _id: null, totalRevenue: { $sum: "$fare" }, averageFare: { $avg: "$fare" } } }
     ]);
-    const topDrivers  = await Ride.aggregate([
-        {$match : {status : "COMPLETED"}},
-        {$group : {_id : "$driverId", rides : {$sum : 1}}},
-        {$sort: {rides : -1}},
-        {$limit : 5},
+    const topDrivers = await Ride.aggregate([
+        { $match: { status: "COMPLETED" } },
+        { $group: { _id: "$driverId", rides: { $sum: 1 } } },
+        { $sort: { rides: -1 } },
+        { $limit: 5 },
         {
-            $lookup : {
-                from : "users",
-                localField : "_id",
-                foreignField : "_id",
-                as : "driver"
+            $lookup: {
+                from: "users",
+                localField: "_id",
+                foreignField: "_id",
+                as: "driver"
             }
         },
-        {$unwind : "$driver"},
-        {$project : {driverName : "$driver.name", rides : 1}},
-    ]); 
+        { $unwind: "$driver" },
+        { $project: { driverName: "$driver.name", rides: 1 } },
+    ]);
 
     const avgDriverRating = await Ride.aggregate([
-        {$match: {status : "COMPLETED", rating: {$exists : true}}},
-        {$group : {_id : null, avgRating : {$avg: "$rating"}}}
+        { $match: { status: "COMPLETED", rating: { $exists: true } } },
+        { $group: { _id: null, avgRating: { $avg: "$rating" } } }
     ])
 
-     return {
+    return {
         totalRides,
         completedRides,
         canceledRides,
@@ -258,7 +297,7 @@ const getAnalytics = async () =>{
         topDrivers,
         avgDriverRating: avgDriverRating[0]?.avgRating || 0
     };
-    
+
 }
 
 export const RideService = {
@@ -269,5 +308,5 @@ export const RideService = {
     getAnalytics,
     getAllRiderRequest,
     getRideById,
-    
+
 }
