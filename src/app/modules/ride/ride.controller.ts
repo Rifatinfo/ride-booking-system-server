@@ -13,12 +13,15 @@ const createRideRequest = catchAsync(async (req: Request, res: Response) => {
     if (!user || !user.userId) {
         throw new AppError(StatusCodes.BAD_REQUEST, "Not Found User")
     }
-    const ride = await RideService.requestRide(req.body, user.userId);
+    const { ride, payment} = await RideService.requestRide(req.body, user.userId);
+
     sendResponse(res, {
         success: true,
         statusCode: StatusCodes.CREATED,
         message: "Ride Request In Successfully",
-        data: ride
+        data: {
+            ride, payment
+        }
     })
 })
 
@@ -30,7 +33,7 @@ const getAllRiderRequest = catchAsync(async (req: Request, res: Response) => {
         message: "Ride Request In Successfully",
         data: rides
     })
-}) 
+})
 const getSingleRiderRequest = catchAsync(async (req: Request, res: Response) => {
     const riderId = req.user;
     if (!riderId) {
@@ -49,13 +52,13 @@ const getSingleRiderRequest = catchAsync(async (req: Request, res: Response) => 
     // fetch driver info manually 
     let driverInfo = null;
     if (rides?.driverId) {
-       driverInfo = await User.findById(rides.driverId)
-        .lean();
+        driverInfo = await User.findById(rides.driverId)
+            .lean();
     }
 
     const rideWithDriver = {
         ...rides,
-        driver: driverInfo, 
+        driver: driverInfo,
     };
     sendResponse(res, {
         success: true,

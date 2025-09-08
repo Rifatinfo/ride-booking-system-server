@@ -20,7 +20,7 @@ const rideSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ["REQUESTED", "ACCEPTED", "PICKED", "IN_TRANSIT", "COMPLETED", "CANCEL_BY_RIDER", "CANCEL_BY_DRIVER"],
+        enum: ["REQUESTED", "ACCEPTED", "PICKED", "IN_TRANSIT", "COMPLETED", "CANCEL_BY_RIDER", "CANCEL_BY_DRIVER", "PAYMENT_COMPLETE"],
         default: "REQUESTED"
     },
     fare: {

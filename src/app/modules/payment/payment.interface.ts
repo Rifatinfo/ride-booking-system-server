@@ -1,18 +1,19 @@
 import { Types } from "mongoose";
 
 export enum PAYMENT_STATUS {
-    PENDING = "PENDING",
-    SUCCESS = "SUCCESS",
+    PAID = "PAID",
+    UNPAID = "UNPAID",
+    CANCELLED = "CANCELLED",
     FAILED = "FAILED",
-    CANCELLED = "CANCELLED"
+    REFUNDED = "REFUNDED"
 }
 
 export interface IPayment {
-    ride : Types.ObjectId;
-    user : Types.ObjectId;
-    amount : number;
-    paymentStatus : PAYMENT_STATUS;
-    transactionId ? : string;
-    createdAt? : Date;
-    updatedAt? : Date;
+    ride: Types.ObjectId;
+    user: Types.ObjectId;
+    amount: number;
+    paymentStatus: PAYMENT_STATUS;
+    transactionId?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
