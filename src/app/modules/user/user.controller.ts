@@ -37,11 +37,11 @@ const goOnline = catchAsync(async (req: Request, res: Response) => {
             isAvailable: true,
             // location,
         },
-        {new : true}
+        { new: true }
     )
 
-    if(!updatedDriver){
-      throw new AppError(StatusCodes.BAD_REQUEST, "Driver not found");
+    if (!updatedDriver) {
+        throw new AppError(StatusCodes.BAD_REQUEST, "Driver not found");
     }
 
     sendResponse(res, {
@@ -62,12 +62,12 @@ const getAllUser = catchAsync(async (req: Request, res: Response, next: NextFunc
     })
 })
 const getMe = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    
+
     const userId = req.user?.userId;
-    if(!userId){
-       throw new AppError(StatusCodes.UNAUTHORIZED, "User Not Found");
+    if (!userId) {
+        throw new AppError(StatusCodes.UNAUTHORIZED, "User Not Found");
     }
-    console.log(userId);
+
     const users = await UserService.getMe(userId);
     sendResponse(res, {
         success: true,
@@ -177,37 +177,37 @@ const unblockUser = async (req: Request, res: Response) => {
     await user.save();
 }
 const changePasswordController = async (req: Request, res: Response) => {
-  try {
-    const userId = req.user?.userId; // from checkAuth
-    if (!userId) {
-      throw new AppError(StatusCodes.BAD_REQUEST, "User not found");
+    try {
+        const userId = req.user?.userId; // from checkAuth
+        if (!userId) {
+            throw new AppError(StatusCodes.BAD_REQUEST, "User not found");
+        }
+
+        const { oldPassword, newPassword } = req.body;
+        if (!oldPassword || !newPassword) {
+            throw new AppError(StatusCodes.BAD_REQUEST, "Both old and new passwords are required");
+        }
+
+        const result = await UserService.changePasswordService(userId, oldPassword, newPassword);
+
+        sendResponse(res, {
+            success: true,
+            statusCode: StatusCodes.OK,
+            message: "Password changed successfully",
+            data: result, // return some safe info (not password)
+        });
+    } catch (error: any) {
+        console.error("Change password error:", error);
+        res.status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: error.message || "Something went wrong",
+        });
     }
-
-    const { oldPassword, newPassword } = req.body;
-    if (!oldPassword || !newPassword) {
-      throw new AppError(StatusCodes.BAD_REQUEST, "Both old and new passwords are required");
-    }
-
-    const result = await UserService.changePasswordService(userId, oldPassword, newPassword);
-
-    sendResponse(res, {
-      success: true,
-      statusCode: StatusCodes.OK,
-      message: "Password changed successfully",
-      data: result, // return some safe info (not password)
-    });
-  } catch (error: any) {
-    console.error("Change password error:", error);
-    res.status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: error.message || "Something went wrong",
-    });
-  }
 };
 
 const allUsers = async (req: Request, res: Response) => {
     const allUsers = await User.find().select("-password");
-    
+
     sendResponse(res, {
         success: true,
         statusCode: StatusCodes.OK,
@@ -217,8 +217,7 @@ const allUsers = async (req: Request, res: Response) => {
 };
 const toggleBlocked = async (req: Request, res: Response) => {
     const userId = req.params;
-    console.log(userId.userId);
-    
+
     const { isBlocked } = req.body;
 
     if (!userId) {
@@ -244,6 +243,27 @@ const toggleBlocked = async (req: Request, res: Response) => {
     });
 };
 
+
+const updateEmergencyPhoneController = async (req: Request, res: Response) => {
+//   const userId = req.user?.userId; // from checkAuth
+  const userId = req.params;
+  
+  if (!userId) {
+    throw new AppError(StatusCodes.BAD_REQUEST, "User not found");
+  }
+
+  const { emergency_phone } = req.body;
+  console.log(userId?.userId)
+  const updatedUser = await UserService.updateEmergencyPhone(userId.userId, emergency_phone);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Emergency phone updated successfully",
+    data: updatedUser,
+  });
+};
+
 export const UserController = {
     createUser,
     getAllUser,
@@ -256,5 +276,6 @@ export const UserController = {
     getMe,
     changePasswordController,
     allUsers,
-    toggleBlocked
+    toggleBlocked,
+    updateEmergencyPhoneController
 }

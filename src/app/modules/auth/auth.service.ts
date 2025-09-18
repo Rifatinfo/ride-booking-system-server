@@ -13,6 +13,10 @@ const credentialLogin = async (payload: Partial<IUser>) => {
         throw new AppError(StatusCodes.BAD_REQUEST, "Email does not exit");
     }
 
+    if(isUserExist.isBlocked === true || isUserExist.status === "SUSPENDED"){
+         throw new AppError(StatusCodes.FORBIDDEN, "Your account is Blocked or suspended");
+    }
+
     const isPasswordMatch = await bcrypt.compare(password as string, isUserExist.password as string);
     if (!isPasswordMatch) {
         throw new AppError(StatusCodes.BAD_REQUEST, "Incorrect Password");

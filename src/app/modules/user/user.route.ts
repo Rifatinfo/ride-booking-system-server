@@ -17,5 +17,7 @@ router.patch("/availability", checkAuth(Role.DRIVER), UserController.setAvailabi
 router.get("/", UserController.allUsers);
 router.get("/", UserController.allUsers);
 router.patch("/toggle-block/:userId", UserController.toggleBlocked);
+router.patch("/me/change", UserController.updateEmergencyPhoneController);
+
 export const UserRoutes = router;
 

@@ -35,6 +35,8 @@ export interface IUser {
     email: string;
     password?: string;         // Remind hash 
     phone?: string;
+    address? : string;
+    emergency_phone : string;
     vehicle? : string
     // Account Status 
     isBlocked?: boolean;

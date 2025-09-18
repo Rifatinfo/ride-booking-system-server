@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DriverRoute = void 0;
+const express_1 = require("express");
+const checkAuth_1 = require("../../middlewares/checkAuth");
+const user_interface_1 = require("../user/user.interface");
+const driver_controller_1 = require("./driver.controller");
+const user_controller_1 = require("../user/user.controller");
+const router = (0, express_1.Router)();
+router.get("/earning", (0, checkAuth_1.checkAuth)(user_interface_1.Role.DRIVER), driver_controller_1.DriverController.getDriverEarning);
+router.get("/drivers", (0, checkAuth_1.checkAuth)(user_interface_1.Role.ADMIN, user_interface_1.Role.SUPER_ADMIN), user_controller_1.UserController.getAllDrivers);
+router.patch("/set-availability", (0, checkAuth_1.checkAuth)(user_interface_1.Role.DRIVER), user_controller_1.UserController.setAvailability);
+exports.DriverRoute = router;

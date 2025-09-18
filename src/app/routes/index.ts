@@ -6,6 +6,7 @@ import { DriverRoute } from "../modules/driver/driver.route";
 import { RatingRouts } from "../modules/rating/rating.routes";
 import { OtpRoutes } from "../modules/otp/otp.routes";
 import { PaymentRoute } from "../modules/payment/payment.route";
+import { ContactRoute } from "../modules/contact/contact.route";
 
 export const router = Router();
 
@@ -35,8 +36,12 @@ const modulesRoutes = [
         route : OtpRoutes
     },
     {
-        path : "/payment",
+        path : "/v1/payment",
         route : PaymentRoute
+    },
+    {
+        path : "/contact",
+        route : ContactRoute
     }
 ]
 

@@ -11,8 +11,10 @@ const userSchema = new Schema<IUser>({
     name: { type: String, required: true },
     email: { type: String, required: true },
     vehicle : { type: String},
+    address : { type: String},
     password: { type: String },
     phone: { type: String },
+    emergency_phone: { type: String },
     isBlocked: { type: boolean, default: false },
     isDeleted: { type: boolean },
     isActive: {

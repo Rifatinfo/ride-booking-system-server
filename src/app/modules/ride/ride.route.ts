@@ -14,6 +14,5 @@ router.get("/all-history", checkAuth(Role.RIDER), RideController.getMyRides);
 router.get('/cancel-complete-history', checkAuth(Role.RIDER), RideController.getRiderRideHistory);
 router.get('/complete', checkAuth(Role.RIDER), RideController.getCompletedRides);
 router.get("/analytics", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), RideController.getAnalytics);
-
-
+router.patch("/rider-cancel-status/:id", checkAuth(Role.RIDER) ,RideController.updateRideStatus);
 export const RideRoutes = router;
