@@ -9,6 +9,7 @@ const driver_route_1 = require("../modules/driver/driver.route");
 const rating_routes_1 = require("../modules/rating/rating.routes");
 const otp_routes_1 = require("../modules/otp/otp.routes");
 const payment_route_1 = require("../modules/payment/payment.route");
+const contact_route_1 = require("../modules/contact/contact.route");
 exports.router = (0, express_1.Router)();
 const modulesRoutes = [
     {
@@ -36,8 +37,12 @@ const modulesRoutes = [
         route: otp_routes_1.OtpRoutes
     },
     {
-        path: "/payment",
+        path: "/v1/payment",
         route: payment_route_1.PaymentRoute
+    },
+    {
+        path: "/contact",
+        route: contact_route_1.ContactRoute
     }
 ];
 modulesRoutes.forEach((route) => {

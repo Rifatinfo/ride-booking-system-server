@@ -15,4 +15,5 @@ router.get("/all-history", (0, checkAuth_1.checkAuth)(user_interface_1.Role.RIDE
 router.get('/cancel-complete-history', (0, checkAuth_1.checkAuth)(user_interface_1.Role.RIDER), ride_controller_1.RideController.getRiderRideHistory);
 router.get('/complete', (0, checkAuth_1.checkAuth)(user_interface_1.Role.RIDER), ride_controller_1.RideController.getCompletedRides);
 router.get("/analytics", (0, checkAuth_1.checkAuth)(user_interface_1.Role.ADMIN, user_interface_1.Role.SUPER_ADMIN), ride_controller_1.RideController.getAnalytics);
+router.patch("/rider-cancel-status/:id", (0, checkAuth_1.checkAuth)(user_interface_1.Role.RIDER), ride_controller_1.RideController.updateRideStatus);
 exports.RideRoutes = router;

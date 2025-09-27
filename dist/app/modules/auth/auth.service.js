@@ -35,6 +35,9 @@ const credentialLogin = (payload) => __awaiter(void 0, void 0, void 0, function*
     if (!isUserExist) {
         throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, "Email does not exit");
     }
+    if (isUserExist.isBlocked === true || isUserExist.status === "SUSPENDED") {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.FORBIDDEN, "Your account is Blocked or suspended");
+    }
     const isPasswordMatch = yield bcryptjs_1.default.compare(password, isUserExist.password);
     if (!isPasswordMatch) {
         throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, "Incorrect Password");

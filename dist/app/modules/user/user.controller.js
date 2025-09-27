@@ -71,7 +71,6 @@ const getMe = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0,
     if (!userId) {
         throw new AppError_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, "User Not Found");
     }
-    console.log(userId);
     const users = yield user_service_1.UserService.getMe(userId);
     (0, sendResponse_1.sendResponse)(res, {
         success: true,
@@ -164,11 +163,11 @@ const changePasswordController = (req, res) => __awaiter(void 0, void 0, void 0,
         if (!userId) {
             throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, "User not found");
         }
-        const { oldPassword, newPassword } = req.body;
+        const { oldPassword, newPassword, name, phone } = req.body;
         if (!oldPassword || !newPassword) {
             throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, "Both old and new passwords are required");
         }
-        const result = yield user_service_1.UserService.changePasswordService(userId, oldPassword, newPassword);
+        const result = yield user_service_1.UserService.changePasswordService(userId, oldPassword, newPassword, { name, phone });
         (0, sendResponse_1.sendResponse)(res, {
             success: true,
             statusCode: http_status_codes_1.StatusCodes.OK,
@@ -195,7 +194,6 @@ const allUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 const toggleBlocked = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.params;
-    console.log(userId.userId);
     const { isBlocked } = req.body;
     if (!userId) {
         throw new AppError_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, "User not authenticated");
@@ -214,6 +212,36 @@ const toggleBlocked = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         data: updatedUser
     });
 });
+const updateEmergencyPhoneController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    //   const userId = req.user?.userId; // from checkAuth
+    const userId = req.params;
+    if (!userId) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, "User not found");
+    }
+    const { emergency_phone } = req.body;
+    console.log(userId === null || userId === void 0 ? void 0 : userId.userId);
+    const updatedUser = yield user_service_1.UserService.updateEmergencyPhone(userId.userId, emergency_phone);
+    (0, sendResponse_1.sendResponse)(res, {
+        success: true,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        message: "Emergency phone updated successfully",
+        data: updatedUser,
+    });
+});
+const updateMe = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+    if (!userId) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, "User Not Found");
+    }
+    const user = yield user_service_1.UserService.updateMe(userId, req.body);
+    (0, sendResponse_1.sendResponse)(res, {
+        success: true,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        message: "Emergency phone updated successfully",
+        data: user.data,
+    });
+}));
 exports.UserController = {
     createUser,
     getAllUser,
@@ -226,5 +254,7 @@ exports.UserController = {
     getMe,
     changePasswordController,
     allUsers,
-    toggleBlocked
+    toggleBlocked,
+    updateEmergencyPhoneController,
+    updateMe
 };

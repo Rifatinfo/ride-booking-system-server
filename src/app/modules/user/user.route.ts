@@ -18,6 +18,6 @@ router.get("/", UserController.allUsers);
 router.get("/", UserController.allUsers);
 router.patch("/toggle-block/:userId", UserController.toggleBlocked);
 router.patch("/me/change", UserController.updateEmergencyPhoneController);
-
+router.put("/me", checkAuth(Role.DRIVER, Role.ADMIN, Role.RIDER, Role.DRIVER), UserController.updateMe);
 export const UserRoutes = router;
 

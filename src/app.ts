@@ -13,7 +13,8 @@ app.use(express.json());
 
 app.use(cors({
     // origin: envVars.FRONTEND_URL,
-    origin: ['http://localhost:5173'],
+    // origin: ['http://localhost:5173'],
+    origin: ['https://ride-booking-clients.vercel.app'],
     credentials: true
 }))
 app.use(cookieParser());

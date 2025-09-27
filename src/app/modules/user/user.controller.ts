@@ -183,12 +183,12 @@ const changePasswordController = async (req: Request, res: Response) => {
             throw new AppError(StatusCodes.BAD_REQUEST, "User not found");
         }
 
-        const { oldPassword, newPassword } = req.body;
+        const { oldPassword, newPassword, name, phone } = req.body;
         if (!oldPassword || !newPassword) {
             throw new AppError(StatusCodes.BAD_REQUEST, "Both old and new passwords are required");
         }
 
-        const result = await UserService.changePasswordService(userId, oldPassword, newPassword);
+        const result = await UserService.changePasswordService(userId, oldPassword, newPassword, { name, phone });
 
         sendResponse(res, {
             success: true,
@@ -245,24 +245,40 @@ const toggleBlocked = async (req: Request, res: Response) => {
 
 
 const updateEmergencyPhoneController = async (req: Request, res: Response) => {
-//   const userId = req.user?.userId; // from checkAuth
-  const userId = req.params;
-  
-  if (!userId) {
-    throw new AppError(StatusCodes.BAD_REQUEST, "User not found");
-  }
+    //   const userId = req.user?.userId; // from checkAuth
+    const userId = req.params;
 
-  const { emergency_phone } = req.body;
-  console.log(userId?.userId)
-  const updatedUser = await UserService.updateEmergencyPhone(userId.userId, emergency_phone);
+    if (!userId) {
+        throw new AppError(StatusCodes.BAD_REQUEST, "User not found");
+    }
 
-  sendResponse(res, {
-    success: true,
-    statusCode: StatusCodes.OK,
-    message: "Emergency phone updated successfully",
-    data: updatedUser,
-  });
+    const { emergency_phone } = req.body;
+    console.log(userId?.userId)
+    const updatedUser = await UserService.updateEmergencyPhone(userId.userId, emergency_phone);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "Emergency phone updated successfully",
+        data: updatedUser,
+    });
 };
+
+
+const updateMe = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.user?.userId;
+    if (!userId) {
+        throw new AppError(StatusCodes.UNAUTHORIZED, "User Not Found");
+    }
+
+    const user = await UserService.updateMe(userId, req.body);
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "Emergency phone updated successfully",
+        data: user.data,
+    });
+})
 
 export const UserController = {
     createUser,
@@ -277,5 +293,6 @@ export const UserController = {
     changePasswordController,
     allUsers,
     toggleBlocked,
-    updateEmergencyPhoneController
+    updateEmergencyPhoneController,
+    updateMe
 }

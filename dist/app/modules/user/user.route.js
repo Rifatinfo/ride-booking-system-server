@@ -19,4 +19,6 @@ router.patch("/availability", (0, checkAuth_1.checkAuth)(user_interface_1.Role.D
 router.get("/", user_controller_1.UserController.allUsers);
 router.get("/", user_controller_1.UserController.allUsers);
 router.patch("/toggle-block/:userId", user_controller_1.UserController.toggleBlocked);
+router.patch("/me/change", user_controller_1.UserController.updateEmergencyPhoneController);
+router.put("/me", (0, checkAuth_1.checkAuth)(user_interface_1.Role.DRIVER, user_interface_1.Role.ADMIN, user_interface_1.Role.RIDER, user_interface_1.Role.DRIVER), user_controller_1.UserController.updateMe);
 exports.UserRoutes = router;
