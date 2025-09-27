@@ -34,7 +34,8 @@ const seedSuperAdmin = () => __awaiter(void 0, void 0, void 0, function* () {
         password: hashedPassword,
         auth: authProvider,
         isVerified: true,
-        isAvailable: true
+        isAvailable: true,
+        emergency_phone: "01792842921"
     };
     const superAdmin = yield user_model_1.User.create(payload);
 });

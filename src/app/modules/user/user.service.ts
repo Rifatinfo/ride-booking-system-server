@@ -47,7 +47,7 @@ const getMe = async (userId: string) => {
   };
 }
 
-const changePasswordService = async (userId: string, oldPassword: string, newPassword: string) => {
+const changePasswordService = async (userId: string, oldPassword: string, newPassword: string, updates: { name?: string; phone?: string }) => {
   const user = await User.findById(userId).select("+password"); // include password
   if (!user) {
     throw new AppError(StatusCodes.BAD_REQUEST, "User not found");
@@ -58,15 +58,30 @@ const changePasswordService = async (userId: string, oldPassword: string, newPas
     throw new AppError(StatusCodes.BAD_REQUEST, "Old password is incorrect");
   }
 
-  user.password = await bcrypt.hash(newPassword, 10);
-  await user.save();
-
-  // return safe info (not password)
-  return {
-    _id: user._id,
-    email: user.email,
-    role: user.role,
+  // user.password = await bcrypt.hash(newPassword, 10);
+  const updateData: any = {
+    password: await bcrypt.hash(newPassword, 10),
   };
+  if (updates.name) user.name = updates.name;
+  if (updates.phone) user.phone = updates.phone;
+  // await user.save();
+
+  // // return safe info (not password)
+  // return {
+  //   _id: user._id,
+  //   email: user.email,
+  //   role: user.role,
+  //   name: user.name,
+  //   phone: user.phone
+  // };
+
+  const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+    new : true,
+    ranValidators : true,
+  }).select("-password");
+  console.log(updatedUser);
+  
+  return updatedUser
 }
 
 const updateEmergencyPhone = async (userId: string, emergency_phone: string) => {
@@ -83,10 +98,28 @@ const updateEmergencyPhone = async (userId: string, emergency_phone: string) => 
   );
   return updatedUser;
 }
+
+const updateMe = async (userId : string, payload : Partial<IUser>) => {
+  const allowedFields = {
+    name : payload.name,
+    phone : payload.phone,
+    address : payload.address,
+    emergency_phone : payload.emergency_phone
+  };
+
+  const user = await User.findByIdAndUpdate(
+    userId,
+    {$set : allowedFields},
+    {new : true, runValidators : true}
+  ).select("-password");
+
+  return {data : user};
+}
 export const UserService = {
   createUser,
   getAllUser,
   getMe,
   changePasswordService,
-  updateEmergencyPhone
+  updateEmergencyPhone,
+  updateMe
 }

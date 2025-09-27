@@ -12,8 +12,10 @@ const userSchema = new mongoose_1.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true },
     vehicle: { type: String },
+    address: { type: String },
     password: { type: String },
     phone: { type: String },
+    emergency_phone: { type: String },
     isBlocked: { type: zod_1.boolean, default: false },
     isDeleted: { type: zod_1.boolean },
     isActive: {

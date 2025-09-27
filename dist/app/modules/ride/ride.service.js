@@ -34,13 +34,13 @@ const requestRide = (payload, riderId) => __awaiter(void 0, void 0, void 0, func
             throw new Error("Missing pickup or destination location");
         }
         // Check active ride first
-        const existingRide = yield ride_model_1.Ride.findOne({
-            riderId,
-            status: { $in: ["ACCEPTED", "PICKED_UP", "IN_TRANSIT"] },
-        }).session(session);
-        if (existingRide) {
-            throw new AppError_1.default(http_status_codes_1.StatusCodes.CONFLICT, "You already have an active ride");
-        }
+        // const existingRide = await Ride.findOne({
+        //     riderId,
+        //     status: { $in: ["ACCEPTED", "PICKED_UP", "IN_TRANSIT"] },
+        // }).session(session);
+        // if (existingRide) {
+        //     throw new AppError(StatusCodes.CONFLICT, "You already have an active ride");
+        // }
         // Coordinates + fare
         const pickupCoords = yield (0, geo_1.getCoordinate)(pickupLocation);
         const destCoords = yield (0, geo_1.getCoordinate)(destinationLocation);
@@ -111,7 +111,7 @@ const requestRide = (payload, riderId) => __awaiter(void 0, void 0, void 0, func
     }
 });
 const getAllRiderRequest = () => __awaiter(void 0, void 0, void 0, function* () {
-    const rides = yield ride_model_1.Ride.find({ "status": ["REQUESTED", "ACCEPTED", "PICKED", "IN_TRANSIT", "COMPLETED", "CANCEL_BY_DRIVER"] }).sort({ requestedAt: -1 }).lean();
+    const rides = yield ride_model_1.Ride.find({ "status": ["REQUESTED", "ACCEPTED", "PICKED", "IN_TRANSIT", "COMPLETED", "CANCEL_BY_DRIVER", "CANCEL_BY_RIDER"] }).sort({ requestedAt: -1 }).lean();
     console.log(rides);
     return rides;
 });
@@ -135,21 +135,9 @@ const updateRideStatus = (riderId, status, user) => __awaiter(void 0, void 0, vo
     if (!ride) {
         throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, "Ride Not Found");
     }
-    // if (user.role === "DRIVER") {
-    //     if (ride.driverId?.toString() !== user._id) {
-    //         throw new AppError(StatusCodes.BAD_REQUEST, "You are not the assigned driver for this ride.");
-    //     }
-    //     if (user.isBlocked || user.status !== 'APPROVED') {
-    //         throw new AppError(403, 'Suspended or unapproved drivers cannot accept rides');
-    //     }
+    // if (ride.cancelAttemptCount >= 15) {
+    //     throw new AppError(403, 'You have reached the maximum number if cancel attempts .');
     // }
-    // if (user.role === "DRIVER" && ride.driverId?.toString() !== user._id) {
-    //     throw new AppError(StatusCodes.BAD_REQUEST, "You are not the assigned driver for this ride.");
-    // }
-    // console.log(user.status);
-    if (ride.cancelAttemptCount >= 15) {
-        throw new AppError_1.default(403, 'You have reached the maximum number if cancel attempts .');
-    }
     ride.status = status;
     // Timestamp update 
     if (status === "ACCEPTED")
@@ -201,8 +189,29 @@ const updateRideStatus = (riderId, status, user) => __awaiter(void 0, void 0, vo
     ride.cancelAttemptCount += 1;
     return yield ride.save();
 });
-const getRidesByRiderId = (riderId) => __awaiter(void 0, void 0, void 0, function* () {
-    return ride_model_1.Ride.find({ riderId }).sort({ createdAt: -1 });
+// const getRidesByRiderId = async (riderId: string) => {
+//     return Ride.find({ riderId }).sort({ createdAt: -1 })
+// }
+const getRidesByRiderId = (riderId, filters) => __awaiter(void 0, void 0, void 0, function* () {
+    const query = { riderId };
+    // filter by status 
+    if (filters.status) {
+        query.status = filters.status;
+    }
+    if (filters.startDate && filters.endDate) {
+        query.createdAt = {
+            $gte: new Date(filters.startDate),
+            $lte: new Date(filters.endDate)
+        };
+    }
+    // search by pickup or dropOff location 
+    if (filters.search) {
+        query.$or = [
+            { pickupLocation: { $regex: filters.search, $options: "i" } },
+            { destinationLocation: { $regex: filters.search, $options: "i" } },
+        ];
+    }
+    return ride_model_1.Ride.find(query).sort({ createdAt: -1 }).lean();
 });
 const getRideById = (rideId) => __awaiter(void 0, void 0, void 0, function* () {
     return ride_model_1.Ride.findById(rideId);

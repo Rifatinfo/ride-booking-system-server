@@ -30,10 +30,13 @@ const getAllRiderRequest = catchAsync(async (req: Request, res: Response) => {
     sendResponse(res, {
         success: true,
         statusCode: StatusCodes.CREATED,
-        message: "Ride Request In Successfully",
+        message: "get All Ride Request In Successfully",
         data: rides
     })
 })
+
+
+
 const getSingleRiderRequest = catchAsync(async (req: Request, res: Response) => {
     const riderId = req.user;
     if (!riderId) {
@@ -116,13 +119,29 @@ const cancelRiderByRider = catchAsync(async (req: Request, res: Response) => {
         data: ride
     })
 })
+// const getMyRides = catchAsync(async (req: Request, res: Response) => {
+//     const user = req.user;
+//     if (!user || !user.userId) {
+//         throw new AppError(StatusCodes.UNAUTHORIZED, "User not authenticated");
+//     }
+//     console.log(user.userId);
+//     const myRides = await RideService.getRidesByRiderId(user.userId);
+//     // const myRides = await Ride.find({ riderId: user._id });
+//     sendResponse(res, {
+//         success: true,
+//         statusCode: StatusCodes.OK,
+//         message: "My History fetched Successfully",
+//         data: myRides,
+//     })
+// })
 const getMyRides = catchAsync(async (req: Request, res: Response) => {
     const user = req.user;
     if (!user || !user.userId) {
         throw new AppError(StatusCodes.UNAUTHORIZED, "User not authenticated");
     }
-    console.log(user.userId);
-    const myRides = await RideService.getRidesByRiderId(user.userId);
+    const filters = req.query;  // status , startDate, endDate , search 
+
+    const myRides = await RideService.getRidesByRiderId(user.userId, filters);
     // const myRides = await Ride.find({ riderId: user._id });
     sendResponse(res, {
         success: true,
